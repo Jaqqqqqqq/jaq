@@ -3,8 +3,6 @@
 ------------------------------------------------- REGISTER FORM ----------------------------------------------------------
 
 Imports MySql.Data.MySqlClient
-Imports System.Security.Cryptography
-Imports System.Text
 
 Public Class register
     Dim conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
@@ -14,13 +12,6 @@ Public Class register
     Public DataAdapter1 As MySqlDataAdapter
     Public ds As DataSet
 
-    Function HashPassword(password As String) As String
-        Dim sha1 As New SHA1CryptoServiceProvider()
-        Dim bytes() As Byte = Encoding.UTF8.GetBytes(password)
-        Dim hash() As Byte = sha1.ComputeHash(bytes)
-        Return Convert.ToBase64String(hash)
-    End Function
-
     Private Sub createacc_Click(sender As Object, e As EventArgs) Handles createacc.Click
         Try
             Dim firstname = TextBox1.Text
@@ -28,12 +19,13 @@ Public Class register
             Dim phone_no = TextBox3.Text
             Dim email_add = TextBox4.Text
             Dim password = TextBox5.Text
-
-            Dim hashedPassword = HashPassword(password)
+            Dim sex = ComboBox1.Text
+            Dim bday = DateTimePicker1.Value.ToString("yyyy-MM-dd")
 
             conn.Open()
-            sql = $"INSERT INTO customers (firstname, lastname, phone_no, email_add, password) VALUES 
-                 ('{firstname}', '{lastname}', '{phone_no}', '{email_add}', '{hashedPassword}')"
+            sql = $"INSERT INTO customers (firstname, lastname, sex, birthdate, phone_no, email_add, password) VALUES 
+       ('{firstname}', '{lastname}', '{sex}', '{bday}','{phone_no}', '{email_add}', SHA1('{password}'))"
+
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery()
 
@@ -50,40 +42,37 @@ Public Class register
             conn.Close()
         End Try
     End Sub
+
+    Private Sub register_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        ComboBox1.Items.Clear()
+        ComboBox1.Items.Add("Female")
+        ComboBox1.Items.Add("Male")
+        ComboBox1.SelectedIndex = 0
+
+    End Sub
 End Class
 
 --------------------------------------------------------------------------------------- LOG IN FORM ----------------------------------------------------------------------------------------------------
 
 Imports MySql.Data.MySqlClient
-Imports System.Security.Cryptography
-Imports System.Text
 
 Public Class login
     Dim conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
     Public sql As String
     Public dbcomm As MySqlCommand
     Public dbread As MySqlDataReader
-    Public Shared LoggedInCustomerID As Integer
 
-
-        Function HashPassword(password As String) As String
-            Dim sha1 As New SHA1CryptoServiceProvider()
-            Dim bytes() As Byte = Encoding.UTF8.GetBytes(password)
-            Dim hash() As Byte = sha1.ComputeHash(bytes)
-            Return Convert.ToBase64String(hash)
-        End Function
-
-        Private Sub Button1_Click(sender As Object, e As EventArgs) Handles log_in.Click
-            Try
-                conn.Open()
-                Dim email_add = TextBox1.Text
-                Dim password = TextBox2.Text
-            Dim hashedPassword = HashPassword(password)
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles log_in.Click
+        Try
+            conn.Open()
+            Dim email_add = TextBox1.Text
+            Dim password = TextBox2.Text
 
 
             sql = "SELECT * FROM staff WHERE email_add = '" & email_add & "' AND password = '" & password & "'"
             dbcomm = New MySqlCommand(sql, conn)
-                dbread = dbcomm.ExecuteReader()
+            dbread = dbcomm.ExecuteReader()
 
             If dbread.HasRows Then
                 If dbread.Read() Then
@@ -112,33 +101,32 @@ Public Class login
 
             dbread.Close()
 
-                sql = "SELECT * FROM customers WHERE email_add = '" & email_add & "' AND password = '" & hashedPassword & "'"
-                dbcomm = New MySqlCommand(sql, conn)
-                dbread = dbcomm.ExecuteReader()
+            sql = "SELECT * FROM customers WHERE email_add = '" & email_add & "' AND password = SHA1('" & password & "')"
 
-                If dbread.HasRows Then
-                    MsgBox("Customer login successful!")
-                If dbread.Read() Then
-                    login.LoggedInCustomerID = Convert.ToInt32(dbread("customer_id"))
-                    standard_rooms.Show()
-                    Me.Hide()
-                End If
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            If (dbread.Read) Then
+                Me.Hide()
 
                 standard_rooms.Show()
-                Me.Hide()
-                Else
-                    MsgBox("Invalid username or password.")
-                End If
+            Else
+                MsgBox("invalid email or password")
+            End If
 
-            Catch ex As Exception
-                MsgBox("Error: " & ex.Message)
-            Finally
-                If conn.State = ConnectionState.Open Then
-                    conn.Close()
-                End If
-            End Try
-        End Sub
-    End Class
+
+
+        Catch ex As MySqlException
+            MsgBox(ex.Message)
+
+            conn.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+
+            conn.Close()
+        End Try
+        conn.Close()
+    End Sub
+End Class
 
 ---------------------------------------------------------------------------------------- SUPPLIER FORM --------------------------------------------------------------------------------------------------
 
