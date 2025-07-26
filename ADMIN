@@ -985,4 +985,288 @@ End Class
 
 
 
----------------------------------
+----------------------------------------------  ROOMS -------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class rooms
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub rooms_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM rooms"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "rooms")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "rooms"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("room_id"))
+            End While
+            dbread.Close()
+
+            ComboBox2.Items.Clear()
+            ComboBox2.Items.Add("Standard Room")
+            ComboBox2.Items.Add("Deluxe Room")
+            ComboBox2.Items.Add("Party Room")
+            ComboBox2.Items.Add("VIP Room")
+            ComboBox2.SelectedIndex = 0
+
+            ComboBox3.Items.Clear()
+            ComboBox3.Items.Add("Available")
+            ComboBox3.Items.Add("Not Available")
+            ComboBox3.SelectedIndex = 0
+
+            conn.Close()
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim roomID As String = ComboBox1.Text
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM rooms WHERE room_id = '" & roomID & "'"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            If dbread.Read() Then
+                TextBox1.Text = dbread("room_no").ToString()
+                TextBox2.Text = dbread("hourly_rate").ToString()
+                TextBox3.Text = dbread("capacity").ToString()
+                ComboBox2.Text = dbread("room_type").ToString()
+            End If
+            dbread.Close()
+            conn.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+    End Sub
+
+    Private Sub ComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox2.SelectedIndexChanged
+        Dim roomtype As String = ComboBox2.Text
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM rooms WHERE room_type = '" & roomtype & "'"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            If dbread.Read() Then
+                TextBox1.Text = dbread("room_no").ToString()
+                TextBox2.Text = dbread("hourly_rate").ToString()
+                TextBox3.Text = dbread("capacity").ToString()
+                ComboBox1.Text = dbread("room_id").ToString()
+            End If
+            dbread.Close()
+            conn.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim query As String = "SELECT * FROM rooms"
+            adapter = New MySqlDataAdapter(query, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = Nothing
+            DataGridView1.DataSource = table
+        Catch ex As Exception
+            MessageBox.Show("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim roomID = Val(ComboBox1.SelectedItem)
+            sql = $"SELECT * FROM rooms WHERE room_id = {roomID}"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "rooms")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "rooms"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            dbread.Close()
+            conn.Close()
+        Catch ex As Exception
+            MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
+        Dim roomno = TextBox1.Text
+        Dim hourlyrate = TextBox2.Text
+        Dim capacity = TextBox3.Text
+        Dim roomtype = ComboBox2.SelectedItem.ToString
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"INSERT INTO rooms (room_type, room_no, hourly_rate, capacity) VALUES ('{roomtype}','{roomno}', '{hourlyrate}', '{capacity}')"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+            conn.Close()
+
+            If (i > 0) Then
+                MsgBox("record saved")
+            Else
+                MsgBox("record not saved")
+            End If
+        Catch ex As MySqlException
+            MsgBox("room not inserted")
+        End Try
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Dim roomno = TextBox1.Text
+        Dim hourlyrate = TextBox2.Text
+        Dim capacity = TextBox3.Text
+        Dim roomtype = ComboBox2.SelectedItem.ToString
+        Dim roomID = Val(ComboBox1.SelectedItem)
+        Dim status = ComboBox3.SelectedItem.ToString
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"UPDATE rooms Set room_type = '{roomtype}', room_no = '{roomno}', hourly_rate = '{hourlyrate}', capacity = '{capacity}',
+             status = '{status}' WHERE room_id = {roomID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+            conn.Close()
+
+            If (i > 0) Then
+                MsgBox("record updated")
+            Else
+                MsgBox("record not updated")
+            End If
+        Catch ex As Exception
+            MsgBox("Error updating record: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            Dim roomID = Val(ComboBox1.SelectedItem)
+            Dim i As Integer
+            Dim ans = MessageBox.Show("do you want to delete this record?", "record deleted", MessageBoxButtons.YesNoCancel)
+            If ans = DialogResult.Yes Then
+                sql = $"DELETE FROM rooms WHERE room_id = {roomID}"
+                dbcomm = New MySqlCommand(sql, conn)
+                i = dbcomm.ExecuteNonQuery
+
+                If (i > 0) Then
+                    MsgBox("room deleted")
+                Else
+                    MsgBox("room not deleted")
+                End If
+            End If
+
+            TextBox1.Clear()
+            TextBox2.Clear()
+            TextBox3.Clear()
+
+            ComboBox2.SelectedIndex = -1
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        TextBox1.Text = ""
+        TextBox2.Text = ""
+        TextBox3.Text = ""
+        ComboBox1.SelectedIndex = -1
+        ComboBox2.SelectedIndex = -1
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim roomtype As String = InputBox("Enter the new Room type:", "Add room type")
+            sql = $"INSERT INTO rooms (room_type) VALUES ('{roomtype}')"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbcomm.ExecuteNonQuery()
+            conn.Close()
+
+            MsgBox("New room type added successfully.")
+        Catch ex As Exception
+            MsgBox("Error adding room type: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
+        Dim status As String = ComboBox3.Text
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM rooms WHERE status = '" & status & "'"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            dbread.Close()
+            conn.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+    End Sub
+
+    Private Sub Button9_Click(sender As Object, e As EventArgs) Handles Button9.Click
+        Me.Hide()
+        admin_buttons.Show()
+    End Sub
+End Class
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------
