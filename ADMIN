@@ -591,6 +591,7 @@ End Class
 
 
 
+
 Imports MySql.Data.MySqlClient
 
 Public Class acc_database
@@ -613,22 +614,17 @@ Public Class acc_database
             DataAdapter1.Fill(ds, "customers")
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "customers"
-            conn.Close()
 
-            conn.Open()
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-
             While dbread.Read()
                 ComboBox1.Items.Add(dbread("customer_id"))
             End While
-
+            dbread.Close()
             ComboBox2.Items.Clear()
             ComboBox2.Items.Add("Female")
             ComboBox2.Items.Add("Male")
             ComboBox2.SelectedIndex = 0
-
-            dbread.Close()
 
         Catch ex As Exception
             MsgBox("Error loading data: " & ex.Message)
@@ -642,12 +638,7 @@ Public Class acc_database
             Dim customerID = Val(ComboBox1.SelectedItem)
             conn.Open()
 
-            Dim firstname = TextBox1.Text
-            Dim lastname = TextBox2.Text
-            Dim phone_no = TextBox4.Text
-            Dim email = TextBox3.Text
-
-            sql = $"SELECT * FROM customers WHERE customer_id = {Val(ComboBox1.SelectedItem)}"
+            sql = $"SELECT * FROM customers WHERE customer_id = {customerID}"
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
             DataAdapter1.Fill(ds, "customers")
@@ -660,12 +651,11 @@ Public Class acc_database
             While dbread.Read()
                 ComboBox1.Items.Add(dbread("customer_id"))
             End While
-
             dbread.Close()
+            conn.Close()
         Catch ex As Exception
             MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
         Finally
-            conn.Close()
         End Try
     End Sub
 
@@ -677,12 +667,13 @@ Public Class acc_database
         Dim email = TextBox3.Text
         Dim sex = ComboBox2.SelectedItem.ToString()
         Dim birthdate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim customerID = Val(ComboBox1.SelectedItem)
 
         Try
             conn.Open()
 
             sql = $"UPDATE customers SET firstname = '{firstName}', lastname = '{lastName}', email_add = '{email}', phone_no = '{phone}', 
-         sex = '{sex}', birthdate = '{birthdate}' WHERE customer_id = {Val(ComboBox1.SelectedItem)}"
+         sex = '{sex}', birthdate = '{birthdate}' WHERE customer_id = {customerID}"
 
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
@@ -703,22 +694,22 @@ Public Class acc_database
 
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
-        Dim customerID As String = ComboBox1.Text
+        Dim customerID = Val(ComboBox1.SelectedItem)
         Try
             conn.Open()
             sql = "SELECT * FROM customers WHERE customer_id = " & customerID
 
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-            TextBox1.Text = dbread("firstname")
-            TextBox2.Text = dbread("lastname")
-            TextBox3.Text = dbread("email_add")
-            TextBox4.Text = dbread("phone_no")
-            ComboBox2.SelectedItem = dbread("sex")
-            DateTimePicker1.Value = dbread("birthdate")
-
+            If dbread.Read() Then
+                TextBox1.Text = dbread("firstname").ToString()
+                TextBox2.Text = dbread("lastname").ToString()
+                TextBox3.Text = dbread("email_add").ToString()
+                TextBox4.Text = dbread("phone_no").ToString()
+                ComboBox2.SelectedItem = dbread("sex").ToString()
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("birthdate"))
+            End If
+            dbread.Close()
 
         Catch ex As MySqlException
             MsgBox(ex.Message)
@@ -744,6 +735,21 @@ Public Class acc_database
         Finally
             conn.Close()
         End Try
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        TextBox1.Text = ""
+        TextBox2.Text = ""
+        TextBox3.Text = ""
+        TextBox4.Text = ""
+        ComboBox1.SelectedIndex = -1
+        ComboBox2.SelectedIndex = -1
+        DateTimePicker1.Value = DateTime.Now
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        Me.Hide()
+        admin_buttons.Show()
     End Sub
 End Class
 
