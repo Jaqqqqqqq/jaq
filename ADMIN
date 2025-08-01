@@ -873,6 +873,7 @@ Public Class rooms
                 TextBox1.Text = dbread("room_no").ToString()
                 TextBox2.Text = dbread("hourly_rate").ToString()
                 TextBox3.Text = dbread("capacity").ToString()
+                TextBox4.Text = dbread("duration").ToString()
                 ComboBox2.Text = dbread("room_type").ToString()
             End If
             dbread.Close()
@@ -895,6 +896,7 @@ Public Class rooms
                 TextBox1.Text = dbread("room_no").ToString()
                 TextBox2.Text = dbread("hourly_rate").ToString()
                 TextBox3.Text = dbread("capacity").ToString()
+                TextBox4.Text = dbread("duration").ToString()
                 ComboBox1.Text = dbread("room_id").ToString()
             End If
             dbread.Close()
@@ -949,12 +951,13 @@ Public Class rooms
         Dim hourlyrate = TextBox2.Text
         Dim capacity = TextBox3.Text
         Dim roomtype = ComboBox2.SelectedItem.ToString
+        Dim duration = TextBox4.Text
 
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            sql = $"INSERT INTO rooms (room_type, room_no, hourly_rate, capacity) VALUES ('{roomtype}','{roomno}', '{hourlyrate}', '{capacity}')"
+            sql = $"INSERT INTO rooms (room_type, room_no, hourly_rate, duration, capacity) VALUES ('{roomtype}','{roomno}', '{hourlyrate}', '{duration}', '{capacity}')"
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
             conn.Close()
@@ -1075,6 +1078,7 @@ Public Class rooms
         admin_buttons.Show()
     End Sub
 End Class
+
 
 
 
