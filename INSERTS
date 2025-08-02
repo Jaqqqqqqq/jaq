@@ -280,7 +280,7 @@ INSERT INTO supplier_transactions (transaction_id, supplier_id, supplier_type, d
 
 EQUIPMENT TRANSACTION DETAILS
 
-INSERT INTO equipment_transactions_details (transaction_id, equipment_id)
+INSERT INTO equipment_transaction_details (transaction_id, equipment_id)
 VALUES
 (1, 1),
 (2, 22),
@@ -326,7 +326,7 @@ VALUES
 FOOD TRANSACTION DETAILS
 
 
-INSERT INTO food_transactions_details (transaction_id, food_id)
+INSERT INTO food_transaction_details (transaction_id, food_id)
 VALUES
 (41, 1),
 (42, 2),
