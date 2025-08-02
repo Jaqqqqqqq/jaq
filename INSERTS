@@ -416,14 +416,13 @@ VALUES
 (4, 'Benedict', 'De Villa', 'Male', '1995-03-15', 'Makati City', '09171234567', 'benedict.devilla@gmail.com', 'Chef', '2023-05-01', 'Active', 3, 'chef003'),
 (5, 'John', 'Villanueva', 'Male', '1992-07-22', 'Makati City', '09179876543', 'john.villanueva@gmail.com', 'Inventory Clerk', '2022-11-10', 'Active', 3, 'inv002'),
 (6, 'Ryan', 'Gomez', 'Male', '1992-07-22', 'Taguig City', '09179876543', 'ryan.gomez@gmail.com', 'Chef', '2022-11-10', 'Active', 3, 'chef004'),
-(7, 'Fritzie Ann', 'Cadao', 'Female', '1988-06-12', 'Makati City', '09981237654', 'fritzie.cadao@gmail.com', 'Admin', '2022-09-15', 'Active', 1, 'admin001'),
-(8, 'Jaqueline', 'Denum', 'Female', '1988-06-12', 'Makati City', '09981237654', 'jaqueline.denum@gmail.com', 'System Administrator', '2022-09-15', 'Active', 1, 'sysadmin001'),
-(9, 'Ana', 'Lopez', 'Female', '1993-04-30', 'Taguig City', '09185673421', 'ana.lopez@gmail.com', 'Equipment Manager', '2021-12-01', 'Active', 4, 'equip001'),
-(10, 'Carlos', 'Dela Cruz', 'Male', '1985-08-18', 'Makati City', '09081231234', 'carlos.dc@gmail.com', 'Equipment Maintenance Staff', '2020-06-20', 'Inactive', 4, 'equip002'),
-(11, 'Liza', 'Torres', 'Female', '1991-10-05', 'Taguig City', '09172349876', 'liza.torres@gmail.com', 'Cleaner', '2019-03-14', 'Active', 4, 'clean003'),
-(12, 'Kyla', 'Manalo', 'Female', '1996-09-10', 'Taguig City', '09175558888', 'kyla.manalo@gmail.com', 'Front Desk Officer', '2024-03-01', 'Active', 2, 'front001'),
-(13, 'Leandro', 'Salazar', 'Male', '1994-12-20', 'Taguig City', '09179994444', 'leandro.salazar@gmail.com', 'Front Desk Officer', '2024-03-01', 'Active', 2, 'front002'),
-(14, 'Fritzie', 'Cadao', 'Male', '1994-12-20', 'Taguig City', '09179234444', 'fritzie.cadao@gmail.com', 'Admin Officer', '2024-03-01', 'Active', 1, 'admin002');
+(7, 'Jaqueline', 'Denum', 'Female', '1988-06-12', 'Makati City', '09981237654', 'jaqueline.denum@gmail.com', 'System Administrator', '2022-09-15', 'Active', 1, 'sysadmin001'),
+(8, 'Ana', 'Lopez', 'Female', '1993-04-30', 'Taguig City', '09185673421', 'ana.lopez@gmail.com', 'Equipment Manager', '2021-12-01', 'Active', 4, 'equip001'),
+(90, 'Carlos', 'Dela Cruz', 'Male', '1985-08-18', 'Makati City', '09081231234', 'carlos.dc@gmail.com', 'Equipment Maintenance Staff', '2020-06-20', 'Inactive', 4, 'equip002'),
+(10, 'Liza', 'Torres', 'Female', '1991-10-05', 'Taguig City', '09172349876', 'liza.torres@gmail.com', 'Cleaner', '2019-03-14', 'Active', 4, 'clean003'),
+(11, 'Kyla', 'Manalo', 'Female', '1996-09-10', 'Taguig City', '09175558888', 'kyla.manalo@gmail.com', 'Front Desk Officer', '2024-03-01', 'Active', 2, 'front001'),
+(12, 'Leandro', 'Salazar', 'Male', '1994-12-20', 'Taguig City', '09179994444', 'leandro.salazar@gmail.com', 'Front Desk Officer', '2024-03-01', 'Active', 2, 'front002'),
+(13, 'Fritzie', 'Cadao', 'Male', '1994-12-20', 'Taguig City', '09179234444', 'fritzie.cadao@gmail.com', 'Admin Officer', '2024-03-01', 'Active', 1, 'admin002');
 
 
 CUSTOMERS
