@@ -123,8 +123,8 @@ VALUES
 (49, 'Gardenia', 'Michelle Torres', '09571234567', 'Taguig City', 'Food'),
 (50, 'Magnolia', 'Eddie Santos', '09582345678', 'Taguig City', 'Food'),
 (51, 'Local Meat Supplier', 'Raul Gutierrez', '09593456789', 'Taguig City', 'Food'),
-(52, 'CDO', 'Angela Reyes', '09604567890', 'Taguig City', 'Food');
-(53, 'Local Ice Plant', 'Jef Stefano', '09871234678', 'Taguig City', 'Food');
+(52, 'CDO', 'Angela Reyes', '09604567890', 'Taguig City', 'Food'),
+(53, 'Local Ice Plant', 'Jef Stefano', '09871234678', 'Taguig City', 'Food'),
 (54, 'Anna Market', 'Anna Dalisay', '09236784512', 'Taguig City', 'Food'),
 (55, 'KLT Fruits, Inc.', 'Marie Dagohoy', '09275763804', 'Mandaluyong City', 'Food'),
 (56, 'TOP Creamery', 'Mark Zaragoza', '09232415040', 'Quezon City', 'Food'),
