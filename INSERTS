@@ -376,13 +376,96 @@ VALUES
 ROOMS
 
 
-INSERT INTO rooms(room_id, room_type,room_no,hourly_rate,capacity, duration, status)
+INSERT INTO rooms(room_id, room_type,room_no,hourly_rate,capacity,duration,status)
 VALUES
-(1, 'Standard Room', '101', 300.00, '4', 'Available'),
-(2, 'Standard Room', '102', 300.00, '4', 'Available'),
-(3, 'Deluxe Room', '103', 450.00, '8', 'Available'),
-(4, 'Deluxe Room', '104', 450.00, '8', 'Available'),
-(5, 'Party Room', '201', 600.00, '10', 'Available'),
-(6, 'Party Room', '202', 600.00, '10', 'Available'),
-(7, 'VIP Room', '301', 800.00, '20', 'Available');
-(8, 'VIP Room', '302', 800.00, '20', 'Available');
+(1, 'Standard Room', 101, 500.00, 6,2, 'Available'),
+(2, 'Standard Room', 102, 500.00, 6,2, 'Available'),
+(3, 'Deluxe Room', 201, 750.00, 12,4, 'Available'),
+(4, 'Deluxe Room', 202, 750.00, 12,4, 'Available'),
+(5, 'Party Room', 301, 1000.00, 13,4, 'Available');
+(6, 'Party Room', 302, 1000.00, 13,4, 'Available'),
+(7, 'VIP Room', 401, 1500.00, 20,4, 'Available'),
+(8, 'VIP Room', 402, 1500.00, 20,4, 'Available');
+
+
+DEPARTMENTS
+
+INSERT INTO departments(dept_name)
+VALUES
+('Admin Department'),
+('Front Desk Department'),
+('Kitchen Department'),
+('Equipment Department');
+
+STAFF
+
+INSERT INTO staff (staff_id, firstname, lastname, sex, birthdate, address, phone_no, email_add, position, date_hired, status, dept_id, password)
+VALUES
+VALUES
+(1, 'Maria', 'Santos', 'Female', '1995-03-15', '09171234567', 'maria.santos@gmail.com', 'Chef', '2023-05-01', 'Active', 3, 'chef001'),
+(2, 'Jose', 'Tillo', 'Male', '1995-03-15', '09171234567', 'jose.tillo@gmail.com', 'Chef', '2023-05-01', 'Active', 3, 'chef002'),
+(3, 'Mike', 'Reyes', 'Male', '1995-03-15', '09171234567', 'mike.reyes@gmail.com', 'Inventory_Clerk', '2023-05-01', 'Active', 3, 'inv001'),
+(4, 'Benedict', 'De Villa', 'Male', '1995-03-15', '09171234567', 'benedict.devilla@gmail.com', 'Chef', '2023-05-01', 'Active', 3, 'chef003'),
+(5, 'John', 'Villanueva', 'Male', '1992-07-22', '09179876543', 'john.villanueva@gmail.com', 'Inventory Clerk', '2022-11-10', 'Active', 3, 'inv002'),
+(6, 'Ryan', 'Gomez', 'Male', '1992-07-22', '09179876543', 'ryan.gomez@gmail.com', 'Chef', '2022-11-10', 'Active', 3, 'chef004'),
+(7, 'Fritzie Ann', 'Cadao', 'Female', '1988-06-12', '09981237654', 'fritzie.cadao@gmail.com', 'Admin', '2022-09-15', 'Active', 1, 'admin001'),
+(8, 'Jaqueline', 'Denum', 'Female', '1988-06-12', '09981237654', 'jaqueline.denum@gmail.com', 'System Administrator', '2022-09-15', 'Active', 1, 'sysadmin001'),
+(9, 'Ana', 'Lopez', 'Female', '1993-04-30', '09185673421', 'ana.lopez@gmail.com', 'Equipment Manager', '2021-12-01', 'Active', 4, 'equip001'),
+(10, 'Carlos', 'Dela Cruz', 'Male', '1985-08-18', '09081231234', 'carlos.dc@gmail.com', 'Equipment Maintenance Staff', '2020-06-20', 'Inactive', 4, 'equip002'),
+(11, 'Liza', 'Torres', 'Female', '1991-10-05', '09172349876', 'liza.torres@gmail.com', 'Cleaner', '2019-03-14', 'Active', 4, 'clean003'),
+(12, 'Kyla', 'Manalo', 'Female', '1996-09-10', '09175558888', 'kyla.manalo@gmail.com', 'Front Desk Officer', '2024-03-01', 'Active', 2, 'front001'),
+(13, 'Leandro', 'Salazar', 'Male', '1994-12-20', '09179994444', 'leandro.salazar@gmail.com', 'Front Desk Officer', '2024-03-01', 'Active', 2, 'front002'),
+(14, 'Fritzie', 'Cadao', 'Male', '1994-12-20', '09179234444', 'fritzie.cadao@gmail.com', 'Admin Officer', '2024-03-01', 'Active', 1, 'admin002');
+
+
+
+
+INSERT INTO customers (customer_id, firstname, lastname, sex, birthdate, phone_no, email_add, password)
+VALUES
+(1, 'Juan', 'Dela Cruz', 'Male', '1990-02-14',  '09171234501', 'juan.cruz@gmail.com', 'juan123'),
+(2, 'Maria', 'Santiago', 'Female', '1995-06-22','09181234502', 'maria.santiago@gmail.com', 'maria123'),
+(3, 'Kenji', 'Tanaka', 'Male', '1998-11-08',  '09191234503', 'kenji.tanaka@gmail.com', 'kenji123'),
+(4, 'Ella', 'Gomez', 'Female', '1993-04-05',  '0920-1234504', 'ella.gomez@gmail.com', 'ella123'),
+(5, 'Mark', 'Villanueva', 'Male', '1991-09-17',  '09211234505', 'mark.villanueva@gmail.com', 'mark123');
+
+MENU
+
+INSERT INTO menu (menu_id, name, flavor, category, price, status) 
+VALUES
+('French Fries', 'Original', 'Sing & Snack Bites', 80.00, 'Available'),
+('French Fries', 'Cheese', 'Sing & Snack Bites', 80.00, 'Available'),
+('French Fries', 'Bbq', 'Sing & Snack Bites', 80.00, 'Available'),
+('French Fries', 'Sour Cream', 'Sing & Snack Bites', 80.00, 'Available'),
+('Chips', NULL, 'Sing & Snack Bites',80.00, 'Available'),
+('Popcorn', 'Cheese', 'Sing & Snack Bites', 80.00, 'Available'),
+('Popcorn', 'Caramel', 'Sing & Snack Bites', 80.00, 'Available'),
+('Popcorn', 'Chocolate', 'Sing & Snack Bites', 80.00, 'Available'),
+('Chicken Nuggets', NULL, 'Sing & Snack Bites', 120.00, 'Available'),
+('Calamares', NULL, 'Chow Picks', 90.00, 'Available'),
+('Cheesy Hotdogs', NULL, 'Chow Picks',70.00, 'Available'),
+('Lumpiang Shanghai', NULL, 'Chow Picks',75.00, 'Available'),
+('Chicken Wings', NULL, 'Chow Picks', 180.00, 'Available'),
+('Pizza', 'Pepperoni', 'Chow Picks', 250.00, 'Available'),
+('Pizza', 'Hawaiian', 'Chow Picks', 250.00, 'Available'),
+('Pizza', 'Vegetarian', 'Chow Picks', 210.00, 'Available'),
+('Pizza', 'Classic Cheese', 'Chow Picks', 210.00, 'Available'),
+('Pancit Canton', 'Original', 'Chow Picks', 50.00, 'Available'),
+('Pancit Canton', 'Kalamansi', 'Chow Picks', 50.00, 'Available'),
+('Pancit Canton', 'Chilimansi', 'Chow Picks', 50.00, 'Available'),
+('Pancit Canton', 'Sweet & Spicy', 'Chow Picks', 50.00, 'Available'),
+('Pancit Canton', 'Extra Hot Chilli', 'Chow Picks', 50.00, 'Available'),
+('Cake', 'Chocolate', 'Desserts', 420.00, 'Available'),
+('Cake', 'Red Velvet', 'Desserts', 450.00, 'Available'),
+('Cake', 'Carrot Cake', 'Desserts', 350.00, 'Available'),
+('Cake', 'Cheesecake', 'Desserts', 380.00, 'Available'),
+('Cake', 'Lemon Tart', 'Desserts', 500.00, 'Available'),
+('Royal', NULL, 'Thirsty Hits Drinks', 25.00, 'Available'),
+('Mountain Dew', NULL, 'Thirsty Hits Drinks', 30.00, 'Available'),
+('Sprite', NULL, 'Thirsty Hits Drinks', 25.00, 'Available'),
+('Coke', NULL, 'Thirsty Hits Drinks', 25.00, 'Available'),
+('Iced Tea', NULL, 'Thirsty Hits Drinks', 40.00, 'Available'),
+('MilkShake', 'Mango', 'Thirsty Hits Drinks', 75.00, 'Available'),
+('MilkShake', 'Chocolate', 'Thirsty Hits Drinks', 75.00, 'Available');
+('MilkShake', 'Matcha', 'Thirsty Hits Drinks', 75.00, 'Available'),
+('MilkShake', 'Cookies & Cream', 'Thirsty Hits Drinks', 75.00, 'Available');
+
