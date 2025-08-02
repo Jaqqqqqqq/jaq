@@ -177,6 +177,10 @@ VALUES
 (38, 8, 'Large Disco Light', 2, 'Working', '2025-07-01'),
 (39, 10, 'Mini Fridge (for drinks)', 2, 'Working', '2025-07-01');
 
+
+SUPPLIER TRANSACTIONS
+
+
 INSERT INTO supplier_transactions (transaction_id, supplier_id, supplier_type, date_delivered, shipping_fee, purchase_amount, quantity, status) VALUES
 (1, 1, 'Equipment', '2025-07-01', 250, 2000, 2, 'Delivered'),
 (2, 1, 'Equipment', '2025-07-01', 250, 2000, 2, 'Delivered'),
@@ -273,6 +277,8 @@ INSERT INTO supplier_transactions (transaction_id, supplier_id, supplier_type, d
 (93, 26, 'Food', '2025-01-16', 100, 500, 2, 'Delivered');
 
 
+EQUIPMENT TRANSACTION DETAILS
+
 INSERT INTO equipment_transactions_details (transaction_id, equipment_id)
 VALUES
 (1, 1),
@@ -315,6 +321,9 @@ VALUES
 (38, 19),
 (39, 31),
 (40, 39);
+
+FOOD TRANSACTION DETAILS
+
 
 INSERT INTO food_transactions_details (transaction_id, food_id)
 VALUES
@@ -418,7 +427,7 @@ VALUES
 (14, 'Fritzie', 'Cadao', 'Male', '1994-12-20', '09179234444', 'fritzie.cadao@gmail.com', 'Admin Officer', '2024-03-01', 'Active', 1, 'admin002');
 
 
-
+CUSTOMERS
 
 INSERT INTO customers (customer_id, firstname, lastname, sex, birthdate, phone_no, email_add, password)
 VALUES
