@@ -3379,7 +3379,10 @@ End Class
 
 
 
-----------------------------------------------------------------   STAFF ACCOUNTS   ------------------------------------------------------------------------------
+                                        ----------------------------------------------------------------------------
+                                                                         STAFF ACCOUNTS
+                                        ----------------------------------------------------------------------------
+
 
 
 
@@ -3406,6 +3409,7 @@ Public Class staff_accounts
     Public table As DataTable = New DataTable()
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
             Dim query As String = "SELECT * FROM staff"
             adapter = New MySqlDataAdapter(query, conn)
@@ -3423,6 +3427,7 @@ Public Class staff_accounts
 
     Private Sub staff_accounts_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
             sql = "SELECT * FROM staff"
@@ -3434,49 +3439,58 @@ Public Class staff_accounts
 
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-
             While dbread.Read()
                 ComboBox1.Items.Add(dbread("staff_id"))
             End While
             dbread.Close()
 
-            ComboBox2.Items.Clear()
-            ComboBox2.Items.Add("Female")
-            ComboBox2.Items.Add("Male")
-            ComboBox2.SelectedIndex = 0
-
-            ComboBox3.Items.Clear()
-            ComboBox3.Items.Add("Chef")
-            ComboBox3.Items.Add("Inventory Clerk")
-            ComboBox3.Items.Add("Cleaner")
-            ComboBox3.Items.Add("System Administrator")
-            ComboBox3.Items.Add("Equipment Maintenance Staff")
-            ComboBox3.Items.Add("Admin Officer")
-            ComboBox3.Items.Add("Front Desk Officer")
-            ComboBox3.Items.Add("Equipment Manager")
-            ComboBox3.SelectedIndex = 0
-
-            ComboBox4.Items.Clear()
-            ComboBox4.Items.Add("Active")
-            ComboBox4.Items.Add("On Leave")
-            ComboBox4.Items.Add("Resigned")
-            ComboBox4.SelectedIndex = 0
+            sql = $"SELECT dept_id FROM departments"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox5.Items.Clear()
+            While dbread.Read()
+                ComboBox5.Items.Add(dbread("dept_id"))
+            End While
+            dbread.Close()
 
         Catch ex As Exception
             MsgBox("Error loading data: " & ex.Message)
         Finally
             conn.Close()
         End Try
+
+        ComboBox2.Items.Clear()
+        ComboBox2.Items.Add("Female")
+        ComboBox2.Items.Add("Male")
+        ComboBox2.SelectedIndex = 0
+
+        ComboBox3.Items.Clear()
+        ComboBox3.Items.Add("Chef")
+        ComboBox3.Items.Add("Inventory Clerk")
+        ComboBox3.Items.Add("Cleaner")
+        ComboBox3.Items.Add("System Administrator")
+        ComboBox3.Items.Add("Equipment Maintenance Staff")
+        ComboBox3.Items.Add("Admin Officer")
+        ComboBox3.Items.Add("Front Desk Officer")
+        ComboBox3.Items.Add("Equipment Manager")
+        ComboBox3.SelectedIndex = 0
+
+        ComboBox4.Items.Clear()
+        ComboBox4.Items.Add("Active")
+        ComboBox4.Items.Add("On Leave")
+        ComboBox4.Items.Add("Resigned")
+        ComboBox4.SelectedIndex = 0
     End Sub
 
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
             Dim staffID = Val(ComboBox1.SelectedItem)
 
-            sql = $"SELECT * FROM staff WHERE staff_id = {Val(ComboBox1.SelectedItem)}"
+            sql = $"SELECT * FROM staff WHERE staff_id = {staffID}"
 
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
@@ -3501,19 +3515,20 @@ Public Class staff_accounts
         Dim phone_no = TextBox4.Text
         Dim email = TextBox3.Text
         Dim address = TextBox7.Text
-        Dim position = ComboBox3.SelectedItem.ToString()
-        Dim status = ComboBox4.SelectedItem.ToString()
-        Dim sex = ComboBox2.SelectedItem.ToString()
+        Dim position = ComboBox3.Text
+        Dim status = ComboBox4.Text
+        Dim sex = ComboBox2.Text
         Dim birthdate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
         Dim date_hired = DateTimePicker2.Value.ToString("yyyy-MM-dd")
-        Dim deptID = ComboBox5.SelectedItem.ToString()
+        Dim deptID = Val(ComboBox5.Text)
         Dim password = TextBox9.Text
 
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = $"INSERT INTO staff (firstname, lastname, sex, birthdate, address, phone_no, email_add, position, date_hired, 
-            status, dept_id, password) VALUES('{firstname}', '{lastname}', '{sex}', '{birthdate}', '{address}', '{phone_no}', '{email}', 
-            '{position}', '{date_hired}', '{status}', '{deptID}','{password}')"
+            sql = $"INSERT INTO staff (dept_id, firstname, lastname, sex, birthdate, address, phone_no, email_add, position, date_hired, 
+            status, password) VALUES({deptID}, '{firstname}', '{lastname}', '{sex}', '{birthdate}', '{address}', '{phone_no}', '{email}', 
+            '{position}', '{date_hired}', '{status}', '{password}')"
 
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
@@ -3538,20 +3553,21 @@ Public Class staff_accounts
         Dim phone_no = TextBox4.Text
         Dim email = TextBox3.Text
         Dim address = TextBox7.Text
-        Dim position = ComboBox3.SelectedItem.ToString()
-        Dim status = ComboBox4.SelectedItem.ToString()
-        Dim sex = ComboBox2.SelectedItem.ToString()
+        Dim position = ComboBox3.SelectedItem
+        Dim status = ComboBox4.SelectedItem
+        Dim sex = ComboBox2.SelectedItem
         Dim birthdate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
         Dim date_hired = DateTimePicker2.Value.ToString("yyyy-MM-dd")
-        Dim deptID = ComboBox5.SelectedItem.ToString()
+        Dim deptID = Val(ComboBox5.SelectedItem)
         Dim password = TextBox9.Text
 
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            sql = $"UPDATE staff SET firstname = '{firstname}', lastname = '{lastname}', sex = '{sex}', birthdate = '{birthdate}', 
+            sql = $"UPDATE staff SET dept_id = {deptID}, firstname = '{firstname}', lastname = '{lastname}', sex = '{sex}', birthdate = '{birthdate}', 
            address = '{address}', phone_no = '{phone_no}', email_add = '{email}', position = '{position}', date_hired = '{date_hired}', 
-           status = '{status}', dept_id = '{deptID}', password = '{password}' WHERE staff_id = {staffID}"
+           status = '{status}', password = '{password}' WHERE staff_id = {staffID}"
 
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
@@ -3575,9 +3591,9 @@ Public Class staff_accounts
         Dim i As Integer
 
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            ' Check if target is an admin
             Dim checkSQL = $"SELECT dept_id FROM staff WHERE staff_id = {staffID}"
             dbcomm = New MySqlCommand(checkSQL, conn)
             dbread = dbcomm.ExecuteReader()
@@ -3608,13 +3624,19 @@ Public Class staff_accounts
                     MsgBox("Staff not deleted.")
                 End If
             End If
-
-            ' Clear fields
             TextBox1.Clear()
             TextBox2.Clear()
             TextBox3.Clear()
             TextBox4.Clear()
+            TextBox7.Clear()
+            TextBox9.Clear()
             ComboBox1.SelectedIndex = -1
+            ComboBox2.SelectedIndex = -1
+            ComboBox3.SelectedIndex = -1
+            ComboBox4.SelectedIndex = -1
+            ComboBox5.SelectedIndex = -1
+            DateTimePicker1.Value = DateTime.Now
+            DateTimePicker2.Value = DateTime.Now
 
         Catch ex As MySqlException
             MsgBox("MySQL Error: " & ex.Message)
@@ -3627,12 +3649,12 @@ Public Class staff_accounts
     End Sub
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
-        TextBox1.Text = ""
-        TextBox2.Text = ""
-        TextBox3.Text = ""
-        TextBox4.Text = ""
-        TextBox7.Text = ""
-        TextBox9.Text = ""
+        TextBox1.Clear()
+        TextBox2.Clear()
+        TextBox3.Clear()
+        TextBox4.Clear()
+        TextBox7.Clear()
+        TextBox9.Clear()
         ComboBox1.SelectedIndex = -1
         ComboBox2.SelectedIndex = -1
         ComboBox3.SelectedIndex = -1
@@ -3644,14 +3666,19 @@ Public Class staff_accounts
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
-        Dim staffID As String = ComboBox1.Text
+        If ComboBox1.SelectedItem Is Nothing OrElse ComboBox1.Text = "" Then
+            Exit Sub
+        End If
+        Dim staffID = Val(ComboBox1.SelectedItem)
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = "SELECT * FROM staff WHERE staff_id = '" & staffID & "'"
+            sql = $"SELECT * FROM staff WHERE staff_id = {staffID}"
+
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-            dbread.Read()
 
+            dbread.Read()
             TextBox1.Text = dbread("firstname")
             TextBox2.Text = dbread("lastname")
             TextBox3.Text = dbread("email_add")
@@ -3661,79 +3688,11 @@ Public Class staff_accounts
             ComboBox2.Text = dbread("sex")
             ComboBox3.Text = dbread("position")
             ComboBox4.Text = dbread("status")
-            ComboBox5.Text = dbread("dept_id")
+            ComboBox5.Text = dbread("dept_id").ToString()
             DateTimePicker1.Value = Convert.ToDateTime(dbread("birthdate"))
             DateTimePicker2.Value = Convert.ToDateTime(dbread("date_hired"))
 
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-        dbread.Close()
-        conn.Close()
-    End Sub
-
-    Private Sub ComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox2.SelectedIndexChanged
-        Dim sex As String = ComboBox2.Text
-        Try
-            conn.Open()
-            sql = "SELECT * FROM staff WHERE sex = '" & sex & "'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
             dbread.Close()
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-        conn.Close()
-    End Sub
-
-    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
-        Dim position As String = ComboBox3.Text
-        Try
-            conn.Open()
-            sql = "SELECT * FROM staff WHERE position = '" & position & "'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-        conn.Close()
-    End Sub
-
-    Private Sub ComboBox4_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox4.SelectedIndexChanged
-        Dim status As String = ComboBox4.Text
-        Try
-            conn.Open()
-            sql = "SELECT * FROM staff WHERE status = '" & status & "'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-        conn.Close()
-    End Sub
-
-    Private Sub ComboBox5_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox5.SelectedIndexChanged
-        Dim deptID As String = ComboBox5.Text
-        Try
-            conn.Open()
-            sql = "SELECT * FROM departments WHERE dept_id = '" & deptID & "'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
         Catch ex As MySqlException
             MsgBox(ex.Message)
         Catch ex As Exception
@@ -3747,7 +3706,6 @@ Public Class staff_accounts
         admin_buttons.Show()
     End Sub
 End Class
-
 
 
 
