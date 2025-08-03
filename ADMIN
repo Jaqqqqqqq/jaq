@@ -558,7 +558,10 @@ End Class
 
 
 
---------------------------------------------------- CUSTOMER LOGS  ------------------------------------------------------------------------
+                                        ----------------------------------------------------------------------------
+                                                                         CUSTOMER LOGS
+                                        ----------------------------------------------------------------------------
+
 
 
 
@@ -569,6 +572,7 @@ End Class
 
 
 Imports MySql.Data.MySqlClient
+
 Public Class customer_logs
     Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
     Public sql As String
@@ -578,26 +582,45 @@ Public Class customer_logs
     Public ds As DataSet
     Public adapter As MySqlDataAdapter
     Public table As DataTable = New DataTable()
+
     Private Sub customer_logs_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
             conn.Open()
 
-            sql = "SELECT * FROM customer_logs"
+            sql = "SELECT 
+                    cl.log_id,
+                    CONCAT(c.firstname, ' ', c.lastname) AS customer_name,
+                     cl.action,
+                     DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp,
+                  r.room_no,
+                   r.room_type,
+                   cl.reservation_id
+                    FROM customer_logs cl
+                    INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id
+                    INNER JOIN customers c ON rr.customer_id = c.customer_id
+                    INNER JOIN rooms r ON rr.room_id = r.room_id"
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
             DataAdapter1.Fill(ds, "customer_logs")
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "customer_logs"
-            conn.Close()
 
-            conn.Open()
+            sql = "SELECT log_id FROM customer_logs"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-
+            ComboBox1.Items.Clear()
             While dbread.Read()
-                ComboBox1.Items.Add(dbread("log_id"))
+                ComboBox1.Items.Add(dbread("log_id").ToString())
             End While
+            dbread.Close()
 
+            sql = "SELECT reservation_id FROM room_reservations"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox3.Items.Clear()
+            While dbread.Read()
+                ComboBox3.Items.Add(dbread("reservation_id").ToString())
+            End While
             dbread.Close()
 
         Catch ex As Exception
@@ -608,55 +631,45 @@ Public Class customer_logs
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
-        Dim logID As String = ComboBox1.Text
         Try
-            conn.Open()
-            sql = "SELECT * FROM customer_logs WHERE log_id = " & logID
+            If ComboBox1.SelectedItem Is Nothing OrElse ComboBox1.Text = "" Then
+                Exit Sub
+            End If
 
+            conn.Open()
+            sql = $"SELECT reservation_id FROM customer_logs WHERE log_id = {ComboBox1.Text}"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-            ComboBox3.Text = dbread("log_id")
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
+            If dbread.Read() Then
+                ComboBox3.Text = dbread("reservation_id").ToString()
+            End If
         Catch ex As Exception
-            MsgBox(ex.Message)
-
-        End Try
-        conn.Close()
-    End Sub
-
-
-    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
-        Dim reservation_id As String = ComboBox3.Text
-        Try
-            conn.Open()
-            sql = "SELECT * FROM room_reservations WHERE reservation_id = " & reservation_id
-
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-            ComboBox1.Text = dbread("log_id")
-
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
+            MsgBox("Error: " & ex.Message)
+        Finally
+            dbread.Close()
+            conn.Close()
         End Try
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
+
             conn.Open()
-            Dim query As String = "SELECT * FROM customer_logs"
-            adapter = New MySqlDataAdapter(query, conn)
+            sql = "SELECT 
+                    cl.log_id,
+                    CONCAT(c.firstname, ' ', c.lastname) AS customer_name,
+                     cl.action,
+                     DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp,
+                  r.room_no,
+                   r.room_type,
+                   cl.reservation_id
+                    FROM customer_logs cl
+                    INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id
+                    INNER JOIN customers c ON rr.customer_id = c.customer_id
+                    INNER JOIN rooms r ON rr.room_id = r.room_id"
+            adapter = New MySqlDataAdapter(sql, conn)
             table.Clear()
             adapter.Fill(table)
-            DataGridView1.DataSource = Nothing
             DataGridView1.DataSource = table
         Catch ex As Exception
             MessageBox.Show("Error loading data: " & ex.Message)
@@ -666,112 +679,93 @@ Public Class customer_logs
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
-        Dim logID = ComboBox1.SelectedItem.ToString()
-        Dim reservation_id = ComboBox3.SelectedItem.ToString()
-
         Try
-            sql = $"SELECT * FROM customer_logs WHERE log_id = {Val(ComboBox1.SelectedItem)}"
+            conn.Open()
+            sql = $"SELECT 
+                    cl.log_id,
+                    CONCAT(c.firstname, ' ', c.lastname) AS customer_name,
+                     cl.action,
+                     DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp,
+                  r.room_no,
+                   r.room_type,
+                   cl.reservation_id
+                    FROM customer_logs cl
+                    INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id
+                    INNER JOIN customers c ON rr.customer_id = c.customer_id
+                    INNER JOIN rooms r ON rr.room_id = r.room_id
+                 WHERE log_id = {ComboBox1.Text}"
+
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
             DataAdapter1.Fill(ds, "customer_logs")
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "customer_logs"
-
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-
-            ComboBox1.Items.Clear()
-            While dbread.Read()
-                ComboBox1.Items.Add(dbread("log_id"))
-            End While
-
-            dbread.Close()
         Catch ex As Exception
-            MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
+            MsgBox("Error: " & ex.Message)
         Finally
             conn.Close()
         End Try
     End Sub
 
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
-        Dim action = "check in"
-        Dim reservation_id = ComboBox3.SelectedItem.ToString()
-        Dim timein = DateTime.Now.ToString("HH:mm:ss")
-
         Try
             conn.Open()
-            sql = $"INSERT INTO customer_logs (reservation_id, action, time_in VALUES('{reservation_id}', '{action}', '{timein}')"
-
+            sql = $"INSERT INTO customer_logs (reservation_id, action) VALUES ({ComboBox3.Text}, 'check-in')"
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
 
             If (i > 0) Then
-                MsgBox("Record saved successfully.")
+                MsgBox("check-in recorded")
             Else
-                MsgBox("Record not saved.")
-            End If
+                MsgBox("check-in not recorded")
 
-        Catch ex As MySqlException
-            MsgBox("Staff not created. Error: " & ex.Message)
+            End If
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
         Finally
             conn.Close()
         End Try
     End Sub
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
-        Dim logID = ComboBox1.SelectedItem.ToString()
-        Dim action = "check out"
-        Dim reservation_id = ComboBox3.SelectedItem.ToString()
-        Dim timeout = DateTime.Now.ToString("HH:mm:ss")
-
         Try
             conn.Open()
-            sql = $"INSERT INTO customer_logs (reservation_id, action, time_in VALUES('{reservation_id}', '{action}', '{timeout}')"
-
+            sql = $"INSERT INTO customer_logs (reservation_id, action) VALUES ({ComboBox3.Text}, 'check-out')"
             dbcomm = New MySqlCommand(sql, conn)
-            Dim i As Integer = dbcomm.ExecuteNonQuery
-
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
             If (i > 0) Then
-                MsgBox("Record saved successfully.")
+                MsgBox("check-out recorded")
             Else
-                MsgBox("Record not saved.")
+                MsgBox("check-out not recorded")
             End If
-
-        Catch ex As MySqlException
-            MsgBox("Staff not created. Error: " & ex.Message)
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
         Finally
             conn.Close()
         End Try
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
-        Dim logID = ComboBox1.SelectedItem.ToString()
-        Dim i As Integer
         Try
-            conn.Open()
-
-            Dim ans = MessageBox.Show("do you want to delete this record?", "record deleted", MessageBoxButtons.YesNoCancel)
+            Dim ans = MessageBox.Show("Do you want to delete this record?", "Confirm Delete", MessageBoxButtons.YesNoCancel)
             If ans = DialogResult.Yes Then
-                sql = $"DELETE FROM customer_logs WHERE log_id = {logID}"
+                conn.Open()
+                sql = $"DELETE FROM customer_logs WHERE log_id = {ComboBox1.Text}"
                 dbcomm = New MySqlCommand(sql, conn)
-                i = dbcomm.ExecuteNonQuery
-
+                Dim i As Integer = dbcomm.ExecuteNonQuery()
                 If (i > 0) Then
                     MsgBox("log deleted")
                 Else
                     MsgBox("log not deleted")
                 End If
             End If
-
             ComboBox1.SelectedIndex = -1
             ComboBox3.SelectedIndex = -1
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
         Catch ex As Exception
-            MsgBox(ex.Message)
-
+            MsgBox("Error: " & ex.Message)
+        Finally
+            conn.Close()
         End Try
-        conn.Close()
     End Sub
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
