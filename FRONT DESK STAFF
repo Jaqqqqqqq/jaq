@@ -634,3 +634,192 @@ Public Class ks_customer_info
 End Class
 
 
+
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                   CUSTOMER INFO & THEIR VIP BOOKINGS
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class ks_vip_customer_info
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub ks_vip_customer_info_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            conn.Open()
+
+            sql = "SELECT 
+                        c.customer_id,
+                        c.firstname,
+                        c.lastname,
+                        c.birthdate,
+                        c.sex,
+                        c.phone_no,
+                        c.email_add,
+                        vr.vip_reservation_id,
+                        vr.room_id,
+                        vr.vip_perk_id,
+                        vr.date_reserved,
+                        vr.time_reserved,
+                        vr.status
+                    FROM customers c
+                    INNER JOIN vip_reservations vr ON c.customer_id = vr.customer_id
+                    ORDER BY vr.date_reserved DESC"
+
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+            ' Populate ComboBox1 with customer IDs
+            ComboBox1.Items.Clear()
+            dbcomm = New MySqlCommand("SELECT DISTINCT customer_id FROM vip_reservations", conn)
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("customer_id").ToString())
+            End While
+            dbread.Close()
+
+            ' Populate ComboBox2 with gender options
+            ComboBox2.Items.Clear()
+            ComboBox2.Items.Add("Female")
+            ComboBox2.Items.Add("Male")
+            ComboBox2.SelectedIndex = 0
+
+        Catch ex As Exception
+            MsgBox("Error loading VIP data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            conn.Open()
+            sql = "SELECT 
+                        c.customer_id,
+                        c.firstname,
+                        c.lastname,
+                        c.birthdate,
+                        c.sex,
+                        c.phone_no,
+                        c.email_add,
+                        vr.vip_reservation_id,
+                        vr.room_id,
+                        vr.vip_perk_id,
+                        vr.date_reserved,
+                        vr.time_reserved,
+                        vr.status
+                    FROM customers c
+                    INNER JOIN vip_reservations vr ON c.customer_id = vr.customer_id
+                    ORDER BY vr.date_reserved DESC"
+
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading VIP data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            Dim customerID = Val(ComboBox1.SelectedItem)
+            conn.Open()
+
+            sql = $"SELECT 
+                        c.customer_id,
+                        c.firstname,
+                        c.lastname,
+                        c.birthdate,
+                        c.sex,
+                        c.phone_no,
+                        c.email_add,
+                        vr.vip_reservation_id,
+                        vr.room_id,
+                        vr.vip_perk_id,
+                        vr.date_reserved,
+                        vr.time_reserved,
+                        vr.status
+                    FROM customers c
+                    INNER JOIN vip_reservations vr ON c.customer_id = vr.customer_id
+                    WHERE c.customer_id = {customerID}
+                    ORDER BY vr.date_reserved DESC"
+
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+        Catch ex As Exception
+            MsgBox("Error filtering VIP data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim customerID = Val(ComboBox1.SelectedItem)
+        Try
+            conn.Open()
+            sql = "SELECT * FROM customers WHERE customer_id = " & customerID
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            If dbread.Read() Then
+                TextBox1.Text = dbread("firstname").ToString()
+                TextBox2.Text = dbread("lastname").ToString()
+                TextBox3.Text = dbread("email_add").ToString()
+                TextBox4.Text = dbread("phone_no").ToString()
+                ComboBox2.SelectedItem = dbread("sex").ToString()
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("birthdate"))
+            End If
+            dbread.Close()
+
+        Catch ex As MySqlException
+            MsgBox("MySQL Error: " & ex.Message)
+        Catch ex As Exception
+            MsgBox("General Error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        TextBox1.Text = ""
+        TextBox2.Text = ""
+        TextBox3.Text = ""
+        TextBox4.Text = ""
+        ComboBox1.SelectedIndex = -1
+        ComboBox2.SelectedIndex = -1
+        DateTimePicker1.Value = DateTime.Now
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        Me.Hide()
+        frontdeskstaff_buttons.Show()
+    End Sub
+End Class
