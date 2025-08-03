@@ -823,3 +823,767 @@ Public Class ks_vip_customer_info
         frontdeskstaff_buttons.Show()
     End Sub
 End Class
+
+
+
+
+
+
+
+
+
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                     ROOM RESERVATIONS
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class room_reservations
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub alerts()
+        For Each row As DataGridViewRow In DataGridView1.Rows
+            If row.IsNewRow Then Continue For
+
+            Dim status = row.Cells("status").Value
+
+            If status = "Cancelled" Then
+                row.DefaultCellStyle.BackColor = Color.Red
+                row.DefaultCellStyle.ForeColor = Color.White
+            ElseIf status = "No Show" Then
+                row.DefaultCellStyle.BackColor = Color.OrangeRed
+                row.DefaultCellStyle.ForeColor = Color.White
+            ElseIf status = "Booked" Then
+                row.DefaultCellStyle.BackColor = Color.Green
+                row.DefaultCellStyle.ForeColor = Color.White
+            ElseIf status = "Booked" Then
+                row.DefaultCellStyle.BackColor = Color.White
+                row.DefaultCellStyle.ForeColor = Color.Black
+            End If
+        Next
+    End Sub
+    Private Sub room_reservations_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            conn.Open()
+
+            sql = "SELECT * FROM room_reservations"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "room_reservations")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "room_reservations"
+            conn.Close()
+
+            conn.Open()
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            ComboBox1.Items.Clear()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("reservation_id"))
+            End While
+            dbread.Close()
+
+            sql = "SELECT room_id FROM rooms ORDER BY room_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox2.Items.Clear()
+            While dbread.Read()
+                ComboBox2.Items.Add(dbread("room_id"))
+            End While
+            dbread.Close()
+
+            sql = "SELECT customer_id FROM customers ORDER BY customer_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox3.Items.Clear()
+            While dbread.Read()
+                ComboBox3.Items.Add(dbread("customer_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+        ComboBox4.Items.Clear()
+        ComboBox4.Items.Add("Completed")
+        ComboBox4.Items.Add("Booked")
+        ComboBox4.Items.Add("Cancelled")
+        ComboBox4.Items.Add("No Show")
+        ComboBox4.SelectedIndex = 0
+
+        alerts()
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim reserveID As String = ComboBox1.Text
+        Try
+            conn.Open()
+            sql = "SELECT * FROM room_reservations WHERE reservation_id = " & reserveID
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            If dbread.Read() Then
+                ComboBox5.Text = dbread("time_reserved")
+                ComboBox2.Text = dbread("room_id")
+                ComboBox3.Text = dbread("customer_id")
+                ComboBox4.Text = dbread("status")
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("date_reserved"))
+            End If
+            dbread.Close()
+
+        Catch ex As MySqlException
+            MsgBox(ex.Message)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+
+        End Try
+        conn.Close()
+        alerts()
+    End Sub
+
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            conn.Open()
+            Dim query As String = "SELECT * FROM room_reservations"
+            adapter = New MySqlDataAdapter(query, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = Nothing
+            DataGridView1.DataSource = table
+        Catch ex As Exception
+            MessageBox.Show("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            conn.Open()
+
+            Dim reservationID = Val(ComboBox1.SelectedItem)
+            Dim roomID = Val(ComboBox2.SelectedItem)
+            Dim customerID = Val(ComboBox3.SelectedItem)
+            Dim dateReserved = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+            Dim timeReserved = ComboBox5.SelectedItem
+            Dim status = ComboBox4.SelectedItem.ToString()
+
+            sql = $"SELECT * FROM room_reservations WHERE reservation_id = {reservationID}"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "room_reservations")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "room_reservations"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            ComboBox1.Items.Clear()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("reservation_id"))
+            End While
+
+            dbread.Close()
+        Catch ex As Exception
+            MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Try
+            conn.Open()
+
+            Dim reservationID = Val(ComboBox1.SelectedItem)
+            Dim roomID = Val(ComboBox2.SelectedItem)
+            Dim customerID = Val(ComboBox3.SelectedItem)
+            Dim dateReserved = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+            Dim timeReserved = ComboBox5.SelectedItem
+            Dim status = ComboBox4.SelectedItem.ToString()
+
+            sql = $"UPDATE room_reservations SET room_id = '{roomID}', customer_id = '{customerID}', date_reserved = '{dateReserved}', 
+time_reserved = '{timeReserved}', status = '{status}' WHERE reservation_id = {reservationID}"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If (i > 0) Then
+                MsgBox("record updated")
+            Else
+                MsgBox("record not updated")
+
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error updating record: " & ex.Message)
+        End Try
+        conn.Close()
+        alerts()
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        ComboBox5.SelectedIndex = -1
+        ComboBox1.SelectedIndex = -1
+        ComboBox2.SelectedIndex = -1
+        ComboBox3.SelectedIndex = -1
+        ComboBox4.SelectedIndex = -1
+        DateTimePicker1.Value = DateTime.Now
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Dim reservationID As Integer = Val(ComboBox1.SelectedItem)
+
+        If reservationID = 0 Then
+            MsgBox("Please select a reservation to cancel.")
+            Exit Sub
+        End If
+
+        Try
+            conn.Open()
+
+            Dim ans = MessageBox.Show("Are you sure you want to cancel this reservation? Only Pending and Prepared orders will be updated.", "Cancel Reservation", MessageBoxButtons.YesNo)
+            If ans <> DialogResult.Yes Then Exit Sub
+
+            sql = $"UPDATE room_reservations SET status = 'Cancelled' WHERE reservation_id = {reservationID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbcomm.ExecuteNonQuery()
+
+            sql = $"
+            UPDATE food_orderline 
+            SET status = CASE 
+                WHEN status = 'Pending' THEN 'Cancelled'
+                WHEN status = 'Prepared' THEN 'Wasted'
+                ELSE status
+            END
+            WHERE reservation_id = {reservationID} 
+            AND status IN ('Pending', 'Prepared')"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbcomm.ExecuteNonQuery()
+
+            MsgBox("Reservation successfully canceled. Pending and Prepared food orders updated.")
+
+            ComboBox5.SelectedIndex = -1
+            ComboBox1.SelectedIndex = -1
+            ComboBox2.SelectedIndex = -1
+            ComboBox3.SelectedIndex = -1
+            ComboBox4.SelectedIndex = -1
+            DateTimePicker1.Value = DateTime.Now
+
+        Catch ex As Exception
+            MsgBox("Error canceling reservation: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+        alerts()
+    End Sub
+
+
+    Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
+        Me.Hide()
+        admin_buttons.Show()
+    End Sub
+
+    Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
+        Dim roomID = Val(ComboBox2.SelectedItem)
+        Dim customerID = Val(ComboBox3.SelectedItem)
+        Dim dateReserved = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim timeReserved = ComboBox5.SelectedItem.ToString()
+        Dim status = ComboBox4.SelectedItem.ToString()
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim selectedDate As Date = DateTimePicker1.Value.Date
+            Dim today As Date = Date.Today
+
+            If selectedDate <= today Then
+                MsgBox("Invalid date or you cannot reserve the date today.", MsgBoxStyle.Exclamation)
+                Exit Sub
+            End If
+
+            sql = $"INSERT INTO room_reservations (customer_id, room_id, date_reserved, time_reserved, status) VALUES 
+('{customerID}', '{roomID}', '{dateReserved}', '{timeReserved}', '{status}')"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
+
+            If i > 0 Then
+                MsgBox("Record saved.")
+                sql = "SELECT reservation_id FROM room_reservations"
+                dbcomm = New MySqlCommand(sql, conn)
+                dbread = dbcomm.ExecuteReader()
+
+                ComboBox1.Items.Clear()
+                While dbread.Read()
+                    ComboBox1.Items.Add(dbread("reservation_id").ToString())
+                End While
+                dbread.Close()
+
+            Else
+                MsgBox("Record not saved.")
+            End If
+
+        Catch ex As MySqlException
+            MsgBox("Database error: " & ex.Message)
+        Catch ex As Exception
+            MsgBox("Unexpected error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+
+    Private Sub ComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox2.SelectedIndexChanged
+        Dim roomID = Val(ComboBox2.SelectedItem)
+
+        ComboBox5.Items.Clear()
+        If roomID = 1 Then
+            ComboBox5.Items.AddRange(New String() {
+            "1:00 PM - 3:00 PM",
+            "4:00 PM - 6:00 PM",
+            "7:00 PM - 9:00 PM",
+            "10:00 PM - 12:00 MN",
+            "1:00 AM - 3:00 AM"
+        })
+        Else
+            ComboBox5.Items.AddRange(New String() {
+            "1:00 PM - 5:00 PM",
+            "6:00 PM - 10:00 PM",
+            "11:00 PM - 3:00 AM"
+        })
+        End If
+        ComboBox5.SelectedIndex = 0
+    End Sub
+End Class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                  VIP RESERVATIONS
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+Public Class vip_reservations
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub alerts()
+        For Each row As DataGridViewRow In DataGridView1.Rows
+            If row.IsNewRow Then Continue For
+
+            Dim status = row.Cells("status").Value
+
+            If status = "Cancelled" Then
+                row.DefaultCellStyle.BackColor = Color.Red
+                row.DefaultCellStyle.ForeColor = Color.White
+            ElseIf status = "No Show" Then
+                row.DefaultCellStyle.BackColor = Color.OrangeRed
+                row.DefaultCellStyle.ForeColor = Color.White
+            ElseIf status = "Booked" Then
+                row.DefaultCellStyle.BackColor = Color.Green
+                row.DefaultCellStyle.ForeColor = Color.White
+            ElseIf status = "Booked" Then
+                row.DefaultCellStyle.BackColor = Color.White
+                row.DefaultCellStyle.ForeColor = Color.Black
+            End If
+        Next
+    End Sub
+    Private Sub vip_reservations_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Closed Then conn.Open()
+            sql = $"SELECT 
+    vr.vip_reservation_id,
+    vr.customer_id ,
+    vr.room_id,
+    vr.vip_perk_id,
+    vr.date_reserved ,
+    vr.time_reserved,
+    vr.status,
+    vp.vip_perk_name
+FROM vip_reservations vr
+INNER JOIN vip_perks vp ON vr.vip_perk_id = vp.vip_perk_id"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "vip_reservations")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "vip_reservations"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox1.Items.Clear()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("vip_reservation_id"))
+            End While
+            dbread.Close()
+
+            sql = $"SELECT room_id FROM rooms"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox2.Items.Clear()
+            While dbread.Read()
+                ComboBox2.Items.Add(dbread("room_id"))
+            End While
+            dbread.Close()
+
+            sql = $"SELECT customer_id FROM customers"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox3.Items.Clear()
+            While dbread.Read()
+                ComboBox3.Items.Add(dbread("customer_id"))
+            End While
+            dbread.Close()
+
+            sql = $"SELECT vip_perk_id FROM vip_perks"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox4.Items.Clear()
+            While dbread.Read()
+                ComboBox4.Items.Add(dbread("vip_perk_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+        ComboBox5.Items.Clear()
+        ComboBox5.Items.Add("Completed")
+        ComboBox5.Items.Add("Booked")
+        ComboBox5.Items.Add("Cancelled")
+        ComboBox5.Items.Add("No Show")
+        ComboBox5.SelectedIndex = 0
+
+        ComboBox6.Items.Clear()
+        ComboBox6.Items.Add("1:00 PM - 5:00 PM")
+        ComboBox6.Items.Add("6:00 PM - 10:00 PM")
+        ComboBox6.Items.Add("11:00 PM - 3:00 AM")
+        ComboBox6.SelectedIndex = 0
+
+        alerts()
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        If ComboBox1.SelectedItem Is Nothing OrElse ComboBox1.Text = "" Then
+            Exit Sub
+        End If
+        Dim vipID = Val(ComboBox1.SelectedItem)
+        Try
+            If conn.State = ConnectionState.Closed Then conn.Open()
+
+            sql = $"SELECT * FROM vip_reservations WHERE vip_reservation_id = {vipID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            If dbread.Read() Then
+                ComboBox6.Text = dbread("time_reserved")
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("date_reserved"))
+                ComboBox2.Text = dbread("room_id")
+                ComboBox3.Text = dbread("customer_id")
+                ComboBox4.Text = dbread("vip_perk_id")
+                ComboBox5.Text = dbread("status")
+            End If
+            dbread.Close()
+
+
+        Catch ex As MySqlException
+            MsgBox("Database error: " & ex.Message)
+        Catch ex As Exception
+            MsgBox("Unexpected error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Closed Then conn.Open()
+
+            Dim query As String = "SELECT 
+    vr.vip_reservation_id,
+    vr.customer_id ,
+    vr.room_id,
+    vr.vip_perk_id,
+    vr.date_reserved ,
+    vr.time_reserved,
+    vr.status,
+    vp.vip_perk_name
+FROM vip_reservations vr
+INNER JOIN vip_perks vp ON vr.vip_perk_id = vp.vip_perk_id"
+            adapter = New MySqlDataAdapter(query, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = Nothing
+            DataGridView1.DataSource = table
+            alerts()
+        Catch ex As Exception
+            MessageBox.Show("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Dim vipID = Val(ComboBox1.SelectedItem)
+        Dim roomID = Val(ComboBox2.SelectedItem)
+        Dim customerID = Val(ComboBox3.SelectedItem)
+        Dim vipPerks = ComboBox4.SelectedItem.ToString()
+        Dim dateReserved = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim timeReserved = ComboBox6.SelectedItem.ToString()
+        Dim status = ComboBox5.SelectedItem.ToString()
+        Try
+            If conn.State = ConnectionState.Closed Then conn.Open()
+
+            sql = $"SELECT 
+    vr.vip_reservation_id,
+    vr.customer_id ,
+    vr.room_id,
+    vr.vip_perk_id,
+    vr.date_reserved ,
+    vr.time_reserved,
+    vr.status,
+    vp.vip_perk_name
+FROM vip_reservations vr
+INNER JOIN vip_perks vp ON vr.vip_perk_id = vp.vip_perk_id
+ WHERE vr.vip_reservation_id = {vipID}"
+
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "vip_reservations")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "vip_reservations"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            ComboBox1.Items.Clear()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("vip_reservation_id"))
+            End While
+
+            dbread.Close()
+            alerts()
+        Catch ex As Exception
+            MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Dim vipID = Val(ComboBox1.SelectedItem)
+        Dim roomID = Val(ComboBox2.SelectedItem)
+        Dim customerID = Val(ComboBox3.SelectedItem)
+        Dim vipPerks = ComboBox4.SelectedItem.ToString()
+        Dim dateReserved = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim timeReserved = ComboBox6.SelectedItem.ToString()
+        Dim status = ComboBox5.SelectedItem.ToString()
+
+        Try
+            If conn.State = ConnectionState.Closed Then conn.Open()
+
+            sql = $"UPDATE vip_reservations SET room_id = '{roomID}', customer_id = '{customerID}', 
+ vip_perk_id  = '{vipPerks}', date_reserved = '{dateReserved}', time_reserved = '{timeReserved}', status = '{status}'  
+WHERE vip_reservation_id = {vipID}"
+
+
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If (i > 0) Then
+                MsgBox("record updated")
+            Else
+                MsgBox("record not updated")
+
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error updating record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+  
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        ComboBox6.SelectedIndex = -1
+        ComboBox1.SelectedIndex = -1
+        ComboBox2.SelectedIndex = -1
+        ComboBox3.SelectedIndex = -1
+        ComboBox4.SelectedIndex = -1
+        ComboBox5.SelectedIndex = -1
+        DateTimePicker1.Value = DateTime.Now
+    End Sub
+
+    Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
+        Me.Hide()
+        admin_buttons.Show()
+    End Sub
+
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+
+        Dim roomID = Val(ComboBox2.Text)
+        Dim customerID = Val(ComboBox3.Text)
+        Dim vipPerks = ComboBox4.SelectedItem.ToString()
+        Dim dateReserved = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim timeReserved = ComboBox6.SelectedItem.ToString()
+        Dim status = ComboBox5.SelectedItem.ToString()
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim selectedDate As Date = DateTimePicker1.Value.Date
+            Dim today As Date = Date.Today
+
+            If selectedDate <= Today Then
+                MsgBox("Invalid date or you cannot reserve the date today.", MsgBoxStyle.Exclamation)
+                Exit Sub
+            End If
+
+            sql = $"INSERT INTO vip_reservations (customer_id, room_id,  vip_perk_id , date_reserved, time_reserved, status) VALUES 
+('{customerID}', '{roomID}', '{vipPerks}', '{dateReserved}', '{timeReserved}', '{status}')"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
+
+            If i > 0 Then
+                MsgBox("Record saved.")
+                sql = "SELECT vip_reservation_id FROM vip_reservations"
+                dbcomm = New MySqlCommand(sql, conn)
+                dbread = dbcomm.ExecuteReader()
+
+                ComboBox1.Items.Clear()
+                While dbread.Read()
+                    ComboBox1.Items.Add(dbread("vip_reservation_id").ToString())
+                End While
+                dbread.Close()
+
+            Else
+                MsgBox("Record not saved.")
+            End If
+        Catch ex As MySqlException
+            MsgBox("Database error: " & ex.Message)
+        Catch ex As Exception
+            MsgBox("Unexpected error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+    End Sub
+
+    Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
+        Dim vipID = Val(ComboBox1.SelectedItem)
+
+        If vipID = 0 Then
+            MsgBox("Please select a reservation to cancel.")
+            Exit Sub
+        End If
+
+        Try
+            conn.Open()
+
+            Dim ans = MessageBox.Show("Are you sure you want to cancel this reservation? Only Pending and Prepared orders will be updated.", "Cancel Reservation", MessageBoxButtons.YesNo)
+            If ans <> DialogResult.Yes Then Exit Sub
+
+            sql = $"UPDATE vip_reservations SET status = 'Cancelled' WHERE vip_reservation_id = {vipID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbcomm.ExecuteNonQuery()
+
+            sql = $"
+            UPDATE vip_food_orderline
+            SET status = CASE 
+                WHEN status = 'Pending' THEN 'Cancelled'
+                WHEN status = 'Prepared' THEN 'Wasted'
+                ELSE status
+            END
+            WHERE vip_reservation_id = {vipID} 
+            AND status IN ('Pending', 'Prepared')"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbcomm.ExecuteNonQuery()
+
+            MsgBox("Reservation successfully canceled. Pending and Prepared food orders updated.")
+
+            ComboBox5.SelectedIndex = -1
+            ComboBox1.SelectedIndex = -1
+            ComboBox2.SelectedIndex = -1
+            ComboBox3.SelectedIndex = -1
+            ComboBox4.SelectedIndex = -1
+            DateTimePicker1.Value = DateTime.Now
+
+        Catch ex As Exception
+            MsgBox("Error canceling reservation: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+        alerts()
+    End Sub
+End Class
