@@ -6713,3 +6713,260 @@ WHERE expense_id = {expID}"
         admin_buttons.Show()
     End Sub
 End Class
+
+
+
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                                            SALES
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class sales
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        If ComboBox2.Text = "" Or ComboBox3.Text = "" Then
+            MsgBox("Please select both Payment ID and Action.")
+            Exit Sub
+        End If
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim paymentID = Val(ComboBox2.Text)
+            Dim action = ComboBox3.Text
+            Dim timestamp = DateTimePicker1.Value.ToString("yyyy-MM-dd HH:mm:ss")
+            Dim totalAmount, vatAmount, netAmount As Decimal
+
+            sql = "SELECT amount_paid FROM customer_payments WHERE payment_id = " & paymentID
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            If dbread.Read() Then
+                totalAmount = Convert.ToDecimal(dbread("amount_paid"))
+                vatAmount = totalAmount * 0.12D
+                netAmount = totalAmount - vatAmount
+                TextBox1.Text = totalAmount.ToString("F2")
+                TextBox2.Text = vatAmount.ToString("F2")
+                TextBox3.Text = netAmount.ToString("F2")
+            Else
+                MsgBox("Payment not found.")
+                dbread.Close()
+                conn.Close()
+                Exit Sub
+            End If
+            dbread.Close()
+
+            sql = "INSERT INTO sales (payment_id, action, total_amount, vat_amount, net_amount, timestamp) " &
+                  "VALUES(" & paymentID & ", '" & action & "', " & totalAmount.ToString("F2") & ", " & vatAmount.ToString("F2") & ", " & netAmount.ToString("F2") & ", '" & timestamp & "')"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
+
+            If i > 0 Then
+                MsgBox("Sale record inserted successfully.")
+                RefreshSales()
+            Else
+                MsgBox("Insert failed.")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Insert Error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        RefreshSales()
+    End Sub
+
+    Private Sub RefreshSales()
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM sales"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+        Catch ex As Exception
+            MsgBox("Refresh Error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        If ComboBox1.Text = "" Then
+            MsgBox("Please select a sale ID.")
+            Exit Sub
+        End If
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim saleID = Val(ComboBox1.Text)
+            sql = "SELECT * FROM sales WHERE sale_id = " & saleID
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            If dbread.Read() Then
+                ComboBox2.Text = dbread("payment_id").ToString()
+                ComboBox3.Text = dbread("action").ToString()
+                TextBox1.Text = dbread("total_amount").ToString()
+                TextBox2.Text = dbread("vat_amount").ToString()
+                TextBox3.Text = dbread("net_amount").ToString()
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("timestamp"))
+            Else
+                MsgBox("Sale not found.")
+            End If
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Search Error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        If ComboBox1.Text = "" Then
+            MsgBox("Please select a sale ID to update.")
+            Exit Sub
+        End If
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim saleID = Val(ComboBox1.Text)
+            Dim paymentID = Val(ComboBox2.Text)
+            Dim action = ComboBox3.Text
+            Dim totalAmount = Convert.ToDecimal(TextBox1.Text)
+            Dim vatAmount = Convert.ToDecimal(TextBox2.Text)
+            Dim netAmount = Convert.ToDecimal(TextBox3.Text)
+            Dim timestamp = DateTimePicker1.Value.ToString("yyyy-MM-dd HH:mm:ss")
+
+            sql = "UPDATE sales SET payment_id = " & paymentID & ", action = '" & action & "', total_amount = " & totalAmount & ", " &
+                  "vat_amount = " & vatAmount & ", net_amount = " & netAmount & ", timestamp = '" & timestamp & "' WHERE sale_id = " & saleID
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
+
+            If i > 0 Then
+                MsgBox("Sale record updated.")
+                RefreshSales()
+            Else
+                MsgBox("Update failed.")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Update Error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        ComboBox1.SelectedIndex = -1
+        ComboBox2.SelectedIndex = -1
+        ComboBox3.SelectedIndex = -1
+        TextBox1.Clear()
+        TextBox2.Clear()
+        TextBox3.Clear()
+        DateTimePicker1.Value = DateTime.Now
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        If ComboBox1.Text = "" Then Exit Sub
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim saleID = Val(ComboBox1.Text)
+            sql = "SELECT * FROM sales WHERE sale_id = " & saleID
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            If dbread.Read() Then
+                TextBox1.Text = dbread("total_amount").ToString()
+                TextBox2.Text = dbread("vat_amount").ToString()
+                TextBox3.Text = dbread("net_amount").ToString()
+                ComboBox2.Text = dbread("payment_id").ToString()
+                ComboBox3.Text = dbread("action").ToString()
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("timestamp"))
+            End If
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("ComboBox1 Error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub sales_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM sales"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "sales")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "sales"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox1.Items.Clear()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("sale_id").ToString())
+            End While
+            dbread.Close()
+
+            sql = "SELECT payment_id FROM customer_payments ORDER BY payment_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox2.Items.Clear()
+            While dbread.Read()
+                ComboBox2.Items.Add(dbread("payment_id").ToString())
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+        ComboBox3.Items.Clear()
+        ComboBox3.Items.Add("Reservation")
+        ComboBox3.Items.Add("Order")
+        ComboBox3.Items.Add("VIP")
+        ComboBox3.Items.Add("Cancellation Fee")
+        ComboBox3.SelectedIndex = 0
+    End Sub
+End Class
