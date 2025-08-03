@@ -163,3 +163,223 @@ Public Class ks_menu
         End Try
     End Sub
 End Class
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                         FOOD INVENTORY
+                                        ----------------------------------------------------------------------------
+
+
+
+
+Imports MySql.Data.MySqlClient
+Public Class ks_food_inventory
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub alerts()
+        For Each row As DataGridViewRow In DataGridView1.Rows
+            If row.IsNewRow Then Continue For
+
+            Dim status = row.Cells("status").Value
+            Dim quantity = row.Cells("quantity").Value
+            Dim expDate = row.Cells("expiration_date").Value
+
+            If expDate IsNot Nothing AndAlso CDate(expDate).Date = Today Then
+                row.Cells("status").Value = "expired"
+                row.DefaultCellStyle.BackColor = Color.Red
+                row.DefaultCellStyle.ForeColor = Color.White
+
+            ElseIf IsNumeric(quantity) AndAlso Val(quantity) <= 2 Then
+                row.DefaultCellStyle.BackColor = Color.Orange
+                row.DefaultCellStyle.ForeColor = Color.White
+            End If
+        Next
+    End Sub
+
+
+    Private Sub ks_food_inventory_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM food_inventory"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "food_inventory")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "food_inventory"
+
+            sql = "SELECT food_id FROM food_inventory ORDER BY food_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("food_id"))
+            End While
+            dbread.Close()
+
+            alerts()
+
+            sql = "SELECT supplier_id FROM suppliers ORDER BY supplier_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox3.Items.Clear()
+            While dbread.Read()
+                ComboBox3.Items.Add(dbread("supplier_id"))
+            End While
+            dbread.Close()
+
+            ComboBox4.Items.Clear()
+            ComboBox4.Items.Add("Fresh")
+            ComboBox4.Items.Add("Expired")
+            ComboBox4.Items.Add("Low Stock!")
+            ComboBox4.SelectedIndex = 0
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim foodID = Val(ComboBox1.SelectedItem)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"SELECT * FROM food_inventory WHERE food_id = {foodID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            If dbread.Read() Then
+                TextBox1.Text = dbread("name")
+                TextBox2.Text = dbread("quantity").ToString()
+                TextBox3.Text = dbread("unit")
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("last_restock"))
+                DateTimePicker2.Value = Convert.ToDateTime(dbread("expiration_date"))
+                ComboBox4.Text = dbread("status")
+                ComboBox3.Text = dbread("supplier_id")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error loading inventory details: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            Dim query As String = "SELECT * FROM food_inventory"
+            adapter = New MySqlDataAdapter(query, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = Nothing
+            DataGridView1.DataSource = table
+
+            ComboBox1.Items.Clear()
+            sql = "SELECT food_id FROM food_inventory ORDER BY food_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("food_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MessageBox.Show("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            Dim foodID = Val(ComboBox1.SelectedItem)
+
+            sql = $" SELECT * FROM food_inventory WHERE food_id = {foodID}"
+
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "food_inventory")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "food_inventory"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            If dbread.HasRows Then dbread.Read()
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Dim name = TextBox1.Text
+        Dim quantity = Val(TextBox2.Text)
+        Dim units = TextBox3.Text
+        Dim last_restock = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim expiration_date = DateTimePicker2.Value.ToString("yyyy-MM-dd")
+        Dim status = ComboBox4.SelectedItem.ToString()
+        Dim supplierID = Val(ComboBox3.SelectedItem)
+        Dim foodID = Val(ComboBox1.SelectedItem)
+        Dim i As Integer = 0
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            sql = $"UPDATE food_inventory SET supplier_id = {supplierID}, name = '{name}', quantity = {quantity}, unit = '{units}', last_restock = '{last_restock}',
+expiration_date = '{expiration_date}', status = '{status}' WHERE food_id = {foodID}"
+
+            dbcomm = New MySqlCommand(sql, conn)
+            i = dbcomm.ExecuteNonQuery
+
+            If (i > 0) Then
+                MsgBox("record updated")
+            Else
+                MsgBox("record Not updated")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error updating record:  " & ex.Message)
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        TextBox1.Text = ""
+        TextBox2.Text = ""
+        TextBox3.Text = ""
+        ComboBox1.SelectedIndex = -1
+        ComboBox3.SelectedIndex = -1
+        ComboBox4.SelectedIndex = -1
+        DateTimePicker1.Value = DateTime.Now
+        DateTimePicker2.Value = DateTime.Now
+        alerts()
+    End Sub
+
+    Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
+        Me.Hide()
+        admin_buttons.Show()
+    End Sub
+End Class
