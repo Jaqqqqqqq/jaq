@@ -2951,7 +2951,10 @@ End Class
 
 
 
-----------------------------------------------------------------------------    DEPARTMENTS ---------------------------------------------------------------------------------------
+                                        ----------------------------------------------------------------------------
+                                                                       DEPARTMENTS
+                                        ----------------------------------------------------------------------------
+
 
 
 
@@ -2975,6 +2978,7 @@ Public Class departments
     Public table As DataTable = New DataTable()
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
             Dim query As String = "SELECT * FROM departments"
             adapter = New MySqlDataAdapter(query, conn)
@@ -2991,6 +2995,7 @@ Public Class departments
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
             Dim deptname = TextBox1.Text
@@ -3017,6 +3022,7 @@ Public Class departments
 
     Private Sub departments_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
             sql = "SELECT * FROM departments"
@@ -3030,7 +3036,7 @@ Public Class departments
             dbread = dbcomm.ExecuteReader()
             ComboBox1.Items.Clear()
             While dbread.Read()
-                ComboBox1.Items.Add(dbread("dept_id").ToString())
+                ComboBox1.Items.Add(dbread("dept_id"))
             End While
             dbread.Close()
 
@@ -3047,6 +3053,7 @@ Public Class departments
         Dim deptID = ComboBox1.Text.ToString()
 
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
             sql = $"INSERT INTO departments (dept_id, dept_name) VALUES('{deptID}', '{deptname}')"
@@ -3059,8 +3066,7 @@ Public Class departments
             Else
                 MsgBox("Record not saved.")
             End If
-            TextBox1.Clear()
-            ComboBox1.SelectedIndex = -1
+
         Catch ex As MySqlException
             MsgBox("Department not created. Error: " & ex.Message)
         Finally
@@ -3073,6 +3079,7 @@ Public Class departments
         Dim deptname = TextBox1.Text
         Dim deptID = {Val(ComboBox1.SelectedItem)}
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
             sql = $"UPDATE departments SET dept_name = '{deptname}' WHERE dept_id = {deptID}"
@@ -3086,8 +3093,7 @@ Public Class departments
             Else
                 MsgBox("record not updated")
             End If
-            TextBox1.Clear()
-            ComboBox1.SelectedIndex = -1
+
 
         Catch ex As Exception
             MsgBox("Error updating record: " & ex.Message)
@@ -3102,6 +3108,7 @@ Public Class departments
         Dim i As Integer
 
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
             Dim ans = MessageBox.Show("do you want to delete this record?", "record deleted", MessageBoxButtons.YesNoCancel)
@@ -3137,28 +3144,36 @@ Public Class departments
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
         Dim deptID As String = ComboBox1.Text
         Try
+            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
+
             sql = "SELECT * FROM departments WHERE dept_id = '" & deptID & "'"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-            dbread.Read()
 
-            TextBox1.Text = dbread("dept_name")
+            If dbread.Read() Then
+                TextBox1.Text = dbread("dept_name").ToString()
+            Else
+                TextBox1.Clear()
+            End If
+
+            dbread.Close()
 
         Catch ex As MySqlException
             MsgBox(ex.Message)
         Catch ex As Exception
             MsgBox(ex.Message)
+        Finally
+            conn.Close()
         End Try
-        conn.Close()
     End Sub
+
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
         Me.Hide()
         admin_buttons.Show()
     End Sub
 End Class
-
 
 
 
