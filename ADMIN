@@ -801,7 +801,9 @@ End Class
 
 
 
-----------------------------------------------  ROOMS -------------------------------------------------------------------------
+                                        ----------------------------------------------------------------------------
+                                                                        ROOMS
+                                        ----------------------------------------------------------------------------
 
 
 
@@ -822,7 +824,21 @@ Public Class rooms
     Public ds As DataSet
     Public adapter As MySqlDataAdapter
     Public table As DataTable = New DataTable()
+    Private Sub alerts()
+        For Each row As DataGridViewRow In DataGridView1.Rows
+            If row.IsNewRow Then Continue For
 
+            Dim status = row.Cells("status").Value
+
+            If status = "Not Available" Then
+                row.DefaultCellStyle.BackColor = Color.Red
+                row.DefaultCellStyle.ForeColor = Color.White
+            Else
+                row.DefaultCellStyle.BackColor = Color.White
+                row.DefaultCellStyle.ForeColor = Color.Black
+            End If
+        Next
+    End Sub
     Private Sub rooms_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
@@ -841,23 +857,23 @@ Public Class rooms
                 ComboBox1.Items.Add(dbread("room_id"))
             End While
             dbread.Close()
-
-            ComboBox2.Items.Clear()
-            ComboBox2.Items.Add("Standard Room")
-            ComboBox2.Items.Add("Deluxe Room")
-            ComboBox2.Items.Add("Party Room")
-            ComboBox2.Items.Add("VIP Room")
-            ComboBox2.SelectedIndex = 0
-
-            ComboBox3.Items.Clear()
-            ComboBox3.Items.Add("Available")
-            ComboBox3.Items.Add("Not Available")
-            ComboBox3.SelectedIndex = 0
-
             conn.Close()
         Catch ex As Exception
             MsgBox("Error loading data: " & ex.Message)
         End Try
+        ComboBox2.Items.Clear()
+        ComboBox2.Items.Add("Standard Room")
+        ComboBox2.Items.Add("Deluxe Room")
+        ComboBox2.Items.Add("Party Room")
+        ComboBox2.Items.Add("VIP Room")
+        ComboBox2.SelectedIndex = 0
+
+        ComboBox3.Items.Clear()
+        ComboBox3.Items.Add("Available")
+        ComboBox3.Items.Add("Not Available")
+        ComboBox3.SelectedIndex = 0
+
+        alerts()
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
@@ -870,40 +886,19 @@ Public Class rooms
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             If dbread.Read() Then
-                TextBox1.Text = dbread("room_no").ToString()
-                TextBox2.Text = dbread("hourly_rate").ToString()
-                TextBox3.Text = dbread("capacity").ToString()
-                TextBox4.Text = dbread("duration").ToString()
-                ComboBox2.Text = dbread("room_type").ToString()
+                TextBox1.Text = dbread("room_no")
+                TextBox2.Text = dbread("hourly_rate")
+                TextBox3.Text = dbread("capacity")
+                TextBox4.Text = dbread("duration")
+                ComboBox2.Text = dbread("room_type")
+                ComboBox3.Text = dbread("status")
             End If
             dbread.Close()
             conn.Close()
         Catch ex As Exception
             MsgBox(ex.Message)
         End Try
-    End Sub
-
-    Private Sub ComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox2.SelectedIndexChanged
-        Dim roomtype As String = ComboBox2.Text
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-
-            sql = "SELECT * FROM rooms WHERE room_type = '" & roomtype & "'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            If dbread.Read() Then
-                TextBox1.Text = dbread("room_no").ToString()
-                TextBox2.Text = dbread("hourly_rate").ToString()
-                TextBox3.Text = dbread("capacity").ToString()
-                TextBox4.Text = dbread("duration").ToString()
-                ComboBox1.Text = dbread("room_id").ToString()
-            End If
-            dbread.Close()
-            conn.Close()
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
+        alerts()
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
@@ -922,6 +917,7 @@ Public Class rooms
         Finally
             conn.Close()
         End Try
+        alerts()
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
@@ -937,13 +933,11 @@ Public Class rooms
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "rooms"
 
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Close()
             conn.Close()
         Catch ex As Exception
             MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
         End Try
+        alerts()
     End Sub
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
@@ -952,12 +946,13 @@ Public Class rooms
         Dim capacity = TextBox3.Text
         Dim roomtype = ComboBox2.SelectedItem.ToString
         Dim duration = TextBox4.Text
+        Dim status = ComboBox3.SelectedItem.ToString
 
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            sql = $"INSERT INTO rooms (room_type, room_no, hourly_rate, duration, capacity) VALUES ('{roomtype}','{roomno}', '{hourlyrate}', '{duration}', '{capacity}')"
+            sql = $"INSERT INTO rooms (room_type, room_no, hourly_rate, capacity, duration, status) VALUES ('{roomtype}','{roomno}', '{hourlyrate}','{capacity}',  '{duration}', '{status}')"
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
             conn.Close()
@@ -970,6 +965,7 @@ Public Class rooms
         Catch ex As MySqlException
             MsgBox("room not inserted")
         End Try
+        alerts()
     End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
@@ -979,12 +975,13 @@ Public Class rooms
         Dim roomtype = ComboBox2.SelectedItem.ToString
         Dim roomID = Val(ComboBox1.SelectedItem)
         Dim status = ComboBox3.SelectedItem.ToString
+        Dim duration = TextBox4.Text
 
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            sql = $"UPDATE rooms Set room_type = '{roomtype}', room_no = '{roomno}', hourly_rate = '{hourlyrate}', capacity = '{capacity}',
+            sql = $"UPDATE rooms SET room_type = '{roomtype}', room_no = '{roomno}', hourly_rate = '{hourlyrate}', capacity = '{capacity}', duration = '{duration}',
              status = '{status}' WHERE room_id = {roomID}"
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
@@ -998,6 +995,7 @@ Public Class rooms
         Catch ex As Exception
             MsgBox("Error updating record: " & ex.Message)
         End Try
+        alerts()
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
@@ -1023,6 +1021,7 @@ Public Class rooms
             TextBox1.Clear()
             TextBox2.Clear()
             TextBox3.Clear()
+            TextBox4.Clear()
 
             ComboBox2.SelectedIndex = -1
         Catch ex As Exception
@@ -1030,47 +1029,16 @@ Public Class rooms
         Finally
             conn.Close()
         End Try
+        alerts()
     End Sub
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
         TextBox1.Text = ""
         TextBox2.Text = ""
         TextBox3.Text = ""
+        TextBox4.Text = ""
         ComboBox1.SelectedIndex = -1
         ComboBox2.SelectedIndex = -1
-    End Sub
-
-    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-
-            Dim roomtype As String = InputBox("Enter the new Room type:", "Add room type")
-            sql = $"INSERT INTO rooms (room_type) VALUES ('{roomtype}')"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbcomm.ExecuteNonQuery()
-            conn.Close()
-
-            MsgBox("New room type added successfully.")
-        Catch ex As Exception
-            MsgBox("Error adding room type: " & ex.Message)
-        End Try
-    End Sub
-
-    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
-        Dim status As String = ComboBox3.Text
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-
-            sql = "SELECT * FROM rooms WHERE status = '" & status & "'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Close()
-            conn.Close()
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
     End Sub
 
     Private Sub Button9_Click(sender As Object, e As EventArgs) Handles Button9.Click
@@ -1078,6 +1046,7 @@ Public Class rooms
         admin_buttons.Show()
     End Sub
 End Class
+
 
 
 
