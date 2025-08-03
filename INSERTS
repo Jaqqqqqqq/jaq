@@ -562,3 +562,183 @@ INSERT INTO menu_has_ingredients (menu_id, food_id) VALUES
 (36, 63),
 (36, 64),
 (36, 65);
+
+
+INSERT INTO room_reservations (customer_id, room_id, date_reserved, time_reserved, status)
+VALUES
+(1, 1, '2025-08-10', '1:00 PM - 3:00 PM', 'Booked'),
+(1, 1, '2025-08-12', '4:00 PM - 6:00 PM', 'Booked'),
+(2, 2, '2025-08-11', '1:00 PM - 5:00 PM', 'Booked'),
+(2, 2, '2025-08-13', '6:00 PM - 10:00 PM', 'Booked'),
+(3, 3, '2025-08-14', '11:00 PM - 3:00 AM', 'Booked'),
+(4, 1, '2025-08-15', '7:00 PM - 9:00 PM', 'Booked'),
+(5, 4, '2025-08-16', '6:00 PM - 10:00 PM', 'Booked'),
+(6, 5, '2025-08-17', '1:00 PM - 5:00 PM', 'Booked'),
+(7, 6, '2025-08-18', '11:00 PM - 3:00 AM', 'Booked'),
+(8, 1, '2025-08-19', '10:00 PM - 12:00 MN', 'Booked'),
+(9, 7, '2025-08-20', '6:00 PM - 10:00 PM', 'Booked'),
+(10, 8, '2025-08-21', '1:00 PM - 5:00 PM', 'Booked'),
+(11, 9, '2025-08-22', '11:00 PM - 3:00 AM', 'Booked'),
+(12, 1, '2025-08-23', '1:00 AM - 3:00 AM', 'Booked'),
+(13, 10, '2025-08-24', '6:00 PM - 10:00 PM', 'Booked'),
+(14, 2, '2025-08-25', '1:00 PM - 5:00 PM', 'Booked'),
+(15, 3, '2025-08-26', '11:00 PM - 3:00 AM', 'Booked'),
+(16, 1, '2025-08-27', '1:00 PM - 3:00 PM', 'Booked'),
+(17, 4, '2025-08-28', '6:00 PM - 10:00 PM', 'Booked'),
+(18, 5, '2025-08-29', '1:00 PM - 5:00 PM', 'Booked');
+
+
+INSERT INTO vip_reservations (customer_id, room_id, vip_perk_id, date_reserved, time_reserved, status)
+VALUES
+(1, 201, 1, '2025-08-10', '1:00 PM - 5:00 PM', 'Booked'),
+(2, 202, 2, '2025-08-11', '6:00 PM - 10:00 PM', 'Booked'),
+(3, 203, 3, '2025-08-12', '11:00 PM - 3:00 AM', 'Booked'),
+(4, 204, 4, '2025-08-13', '1:00 PM - 5:00 PM', 'Completed'),
+(5, 205, 5, '2025-08-14', '6:00 PM - 10:00 PM', 'Booked'),
+(6, 206, 1, '2025-08-15', '11:00 PM - 3:00 AM', 'Cancelled'),
+(7, 207, 2, '2025-08-16', '1:00 PM - 5:00 PM', 'Booked'),
+(8, 208, 3, '2025-08-17', '6:00 PM - 10:00 PM', 'Booked'),
+(9, 209, 4, '2025-08-18', '11:00 PM - 3:00 AM', 'Booked'),
+(10, 210, 5, '2025-08-19', '1:00 PM - 5:00 PM', 'Booked'),
+(11, 201, 1, '2025-08-20', '6:00 PM - 10:00 PM', 'Completed'),
+(12, 202, 2, '2025-08-21', '11:00 PM - 3:00 AM', 'Booked'),
+(13, 203, 3, '2025-08-22', '1:00 PM - 5:00 PM', 'Booked'),
+(14, 204, 4, '2025-08-23', '6:00 PM - 10:00 PM', 'Booked'),
+(15, 205, 5, '2025-08-24', '11:00 PM - 3:00 AM', 'Booked'),
+(16, 206, 1, '2025-08-25', '1:00 PM - 5:00 PM', 'Cancelled'),
+(17, 207, 2, '2025-08-26', '6:00 PM - 10:00 PM', 'Booked'),
+(18, 208, 3, '2025-08-27', '11:00 PM - 3:00 AM', 'Booked'),
+(19, 209, 4, '2025-08-28', '1:00 PM - 5:00 PM', 'Booked'),
+(20, 210, 5, '2025-08-29', '6:00 PM - 10:00 PM', 'Booked');
+
+
+INSERT INTO food_orderline (reservation_id, menu_id, quantity, status, details)
+VALUES
+(1, 1, 2, 'Prepared', 'Extra cheese'),
+(2, 3, 1, 'Completed', 'No onions'),
+(3, 5, 3, 'Pending', NULL),
+(4, 2, 1, 'Cancelled', 'Changed order'),
+(6, 4, 2, 'Wasted', 'Left early'),
+(8, 6, 1, 'Prepared', 'Add ice'),
+(10, 2, 2, 'Completed', 'For two guests'),
+(12, 1, 1, 'Pending', NULL),
+(14, 3, 2, 'Prepared', 'Extra spicy'),
+(16, 5, 1, 'Completed', 'Birthday treat'),
+(18, 4, 3, 'Prepared', 'Group order');
+
+
+INSERT INTO vip_food_orderline (vip_reservation_id, menu_id, quantity, status, details)
+VALUES
+(1, 10, 2, 'Prepared', 'Requested wine pairing'),
+(2, 12, 1, 'Completed', 'Anniversary dinner'),
+(3, 11, 3, 'Pending', NULL),
+(5, 13, 2, 'Prepared', 'Extra spicy'),
+(7, 14, 1, 'Completed', 'Vegan option'),
+(9, 15, 2, 'Prepared', 'For two guests'),
+(10, 10, 1, 'Pending', NULL),
+(12, 12, 2, 'Prepared', 'With dessert'),
+(14, 11, 1, 'Completed', 'No garlic'),
+(16, 13, 3, 'Cancelled', 'Changed mind'),
+(18, 14, 2, 'Prepared', 'Late night snack'),
+(20, 15, 1, 'Completed', 'Special request');
+
+
+INSERT INTO customer_payments (customer_id, action, amount_paid, timestamp)
+VALUES
+-- Regular Room Reservations
+(1, 'Reservation', 500.00, '2025-08-10 12:00:00'),
+(1, 'Reservation', 500.00, '2025-08-12 15:00:00'),
+(2, 'Reservation', 500.00, '2025-08-11 12:00:00'),
+(2, 'Reservation', 500.00, '2025-08-13 17:00:00'),
+(3, 'Reservation', 500.00, '2025-08-14 22:00:00'),
+(4, 'Reservation', 500.00, '2025-08-15 18:00:00'),
+(5, 'Reservation', 500.00, '2025-08-16 17:00:00'),
+(6, 'Reservation', 500.00, '2025-08-17 12:00:00'),
+(7, 'Reservation', 500.00, '2025-08-18 22:00:00'),
+(8, 'Reservation', 500.00, '2025-08-19 21:00:00'),
+(9, 'Reservation', 500.00, '2025-08-20 17:00:00'),
+(10, 'Reservation', 500.00, '2025-08-21 12:00:00'),
+(11, 'Reservation', 500.00, '2025-08-22 22:00:00'),
+(12, 'Reservation', 500.00, '2025-08-23 00:00:00'),
+(13, 'Reservation', 500.00, '2025-08-24 17:00:00'),
+(14, 'Reservation', 500.00, '2025-08-25 12:00:00'),
+(15, 'Reservation', 500.00, '2025-08-26 22:00:00'),
+(16, 'Reservation', 500.00, '2025-08-27 12:00:00'),
+(17, 'Reservation', 500.00, '2025-08-28 17:00:00'),
+(18, 'Reservation', 500.00, '2025-08-29 12:00:00'),
+
+-- VIP Reservations
+(1, 'VIP', 1000.00, '2025-08-10 12:00:00'),
+(2, 'VIP', 1000.00, '2025-08-11 17:00:00'),
+(3, 'VIP', 1000.00, '2025-08-12 22:00:00'),
+(4, 'VIP', 1000.00, '2025-08-13 12:00:00'),
+(5, 'VIP', 1000.00, '2025-08-14 17:00:00'),
+(6, 'Cancellation Fee', 200.00, '2025-08-15 22:00:00'),
+(7, 'VIP', 1000.00, '2025-08-16 12:00:00'),
+(8, 'VIP', 1000.00, '2025-08-17 17:00:00'),
+(9, 'VIP', 1000.00, '2025-08-18 22:00:00'),
+(10, 'VIP', 1000.00, '2025-08-19 12:00:00'),
+(11, 'VIP', 1000.00, '2025-08-20 17:00:00'),
+(12, 'VIP', 1000.00, '2025-08-21 22:00:00'),
+(13, 'VIP', 1000.00, '2025-08-22 12:00:00'),
+(14, 'VIP', 1000.00, '2025-08-23 17:00:00'),
+(15, 'VIP', 1000.00, '2025-08-24 22:00:00'),
+(16, 'Cancellation Fee', 200.00, '2025-08-25 12:00:00'),
+(17, 'VIP', 1000.00, '2025-08-26 17:00:00'),
+(18, 'VIP', 1000.00, '2025-08-27 22:00:00'),
+(19, 'VIP', 1000.00, '2025-08-28 12:00:00'),
+(20, 'VIP', 1000.00, '2025-08-29 17:00:00'),
+
+-- Food Orders (Regular)
+(1, 'Order', 300.00, '2025-08-10 13:00:00'),
+(2, 'Order', 150.00, '2025-08-11 13:00:00'),
+(3, 'Order', 450.00, '2025-08-12 13:00:00'),
+(4, 'Order', 150.00, '2025-08-13 13:00:00'),
+(6, 'Order', 300.00, '2025-08-15 13:00:00'),
+(8, 'Order', 150.00, '2025-08-17 13:00:00'),
+(10, 'Order', 300.00, '2025-08-19 13:00:00'),
+(12, 'Order', 150.00, '2025-08-21 13:00:00'),
+(14, 'Order', 300.00, '2025-08-23 13:00:00'),
+(16, 'Order', 150.00, '2025-08-25 13:00:00'),
+(18, 'Order', 450.00, '2025-08-27 13:00:00'),
+
+-- Food Orders (VIP)
+(1, 'Order', 300.00, '2025-08-10 14:00:00'),
+(2, 'Order', 150.00, '2025-08-11 18:00:00'),
+(3, 'Order', 450.00, '2025-08-12 23:00:00'),
+(5, 'Order', 300.00, '2025-08-14 18:00:00'),
+(7, 'Order', 150.00, '2025-08-16 14:00:00'),
+(9, 'Order', 300.00, '2025-08-18 23:00:00'),
+(10, 'Order', 150.00, '2025-08-19 14:00:00'),
+(12, 'Order', 300.00, '2025-08-21 23:00:00'),
+(14, 'Order', 150.00, '2025-08-23 18:00:00'),
+(16, 'Order', 450.00, '2025-08-25 14:00:00'),
+(18, 'Order', 300.00, '2025-08-27 23:00:00'),
+(20, 'Order', 150.00, '2025-08-29 18:00:00');
+
+
+
+INSERT INTO customers (customer_id, firstname, lastname, birthdate, sex, phone_no, email_add, password)
+VALUES
+(1, 'Juan', 'Dela Cruz', '1990-02-14', 'Male', '09171234501', 'juan.cruz@gmail.com', 'AnaDelaCruz90'),
+(2, 'Maria', 'Santiago', '1995-06-22', 'Female', '09181234502', 'maria.santiago@gmail.com', 'MariaS95'),
+(3, 'Kenji', 'Tanaka', '1998-11-08', 'Male', '09191234503', 'kenji.tanaka@gmail.com', 'KenjiT98'),
+(4, 'Ella', 'Gomez', '1993-04-05', 'Female', '09201234504', 'ella.gomez@gmail.com', 'EllaG93'),
+(5, 'Mark', 'Villanueva', '1991-09-17', 'Male', '09211234505', 'mark.villanueva@gmail.com', 'MarkV91'),
+(6, 'Liza', 'Reyes', '1992-03-12', 'Female', '09221234506', 'liza.reyes@gmail.com', 'LizaR92'),
+(7, 'Carlos', 'Rivera', '1989-07-30', 'Male', '09231234507', 'carlos.rivera@gmail.com', 'CarlosR89'),
+(8, 'Bea', 'Alonzo', '1994-12-01', 'Female', '09241234508', 'bea.alonzo@gmail.com', 'BeaA94'),
+(9, 'Miguel', 'Lopez', '1990-05-20', 'Male', '09251234509', 'miguel.lopez@gmail.com', 'MiguelL90'),
+(10, 'Sofia', 'Garcia', '1996-08-15', 'Female', '09261234510', 'sofia.garcia@gmail.com', 'SofiaG96'),
+(11, 'Daniel', 'Padilla', '1992-10-10', 'Male', '09271234511', 'daniel.padilla@gmail.com', 'DanielP92'),
+(12, 'Kim', 'Chiu', '1993-01-25', 'Female', '09281234512', 'kim.chiu@gmail.com', 'KimC93'),
+(13, 'Enrique', 'Gil', '1991-06-18', 'Male', '09291234513', 'enrique.gil@gmail.com', 'EnriqueG91'),
+(14, 'Maine', 'Mendoza', '1995-03-03', 'Female', '09301234514', 'maine.mendoza@gmail.com', 'MaineM95'),
+(15, 'Alden', 'Richards', '1992-02-08', 'Male', '09311234515', 'alden.richards@gmail.com', 'AldenR92'),
+(16, 'Janella', 'Salvador', '1998-04-10', 'Female', '09321234516', 'janella.salvador@gmail.com', 'JanellaS98'),
+(17, 'Joshua', 'Garcia', '1997-09-05', 'Male', '09331234517', 'joshua.garcia@gmail.com', 'JoshuaG97'),
+(18, 'Julia', 'Barretto', '1996-03-10', 'Female', '09341234518', 'julia.barretto@gmail.com', 'JuliaB96'),
+(19, 'James', 'Reid', '1993-05-11', 'Male', '09351234519', 'james.reid@gmail.com', 'JamesR93'),
+(20, 'Nadine', 'Lustre', '1994-10-31', 'Female', '09361234520', 'nadine.lustre@gmail.com', 'NadineL94');
+
+
