@@ -5997,5 +5997,205 @@ End Class
 
 
 
+                                        ----------------------------------------------------------------------------
+                                                                     VIP PERKS
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class vip_perks
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM vip_perks"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+        Catch ex As Exception
+            MsgBox("Error refreshing data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Dim perkID = Val(ComboBox1.SelectedItem)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"SELECT * FROM vip_perks WHERE vip_perk_id = {perkID}"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+        Catch ex As Exception
+            MsgBox("Error searching data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Dim perkID = Val(ComboBox1.Text)
+        Dim perkName = TextBox1.Text.Trim()
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"INSERT INTO vip_perks (vip_perk_name) VALUES ('{perkName}')"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If i > 0 Then
+                MsgBox("Perk inserted successfully.")
+            Else
+                MsgBox("Insert failed.")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error inserting record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Dim perkID = Val(ComboBox1.Text)
+        Dim perkName = TextBox1.Text.Trim()
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"UPDATE vip_perks SET vip_perk_name = '{perkName}' WHERE vip_perk_id = {perkID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If i > 0 Then
+                MsgBox("Perk updated successfully.")
+            Else
+                MsgBox("Update failed.")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error updating record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Dim perkID = Val(ComboBox1.Text)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim ans = MessageBox.Show("Do you want to delete this perk?", "Confirm Delete", MessageBoxButtons.YesNoCancel)
+            If ans = DialogResult.Yes Then
+                sql = $"DELETE FROM vip_perks WHERE vip_perk_id = {perkID}"
+                dbcomm = New MySqlCommand(sql, conn)
+                Dim i As Integer = dbcomm.ExecuteNonQuery
+
+                If i > 0 Then
+                    MsgBox("Perk deleted successfully.")
+                Else
+                    MsgBox("Delete failed.")
+                End If
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error deleting record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub vip_perks_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM vip_perks"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+            ComboBox1.Items.Clear()
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("vip_perk_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim perkID = Val(ComboBox1.Text)
+        Try
+            conn.Open()
+            sql = "SELECT * FROM vip_perks WHERE vip_perk_id = " & perkID
+
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            If dbread.Read() Then
+                TextBox1.Text = dbread("vip_perk_name").ToString()
+            End If
+            dbread.Close()
+
+        Catch ex As MySqlException
+            MsgBox(ex.Message)
+        Catch ex As Exception
+            MsgBox(ex.Message)
+
+        End Try
+        conn.Close()
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        ComboBox1.SelectedIndex = -1
+        TextBox1.Clear()
+    End Sub
+End Class
+
 
 
