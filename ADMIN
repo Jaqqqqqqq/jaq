@@ -2129,7 +2129,7 @@ Public Class vip_logs
 
             If i > 0 Then
                 MsgBox("Check-in recorded successfully.")
-                sql = "SELECT log_id FROM vip_logs"
+                sql = "SELECT vip_log_id FROM vip_logs"
                 dbcomm = New MySqlCommand(sql, conn)
                 dbread = dbcomm.ExecuteReader()
                 ComboBox1.Items.Clear()
@@ -2163,15 +2163,19 @@ Public Class vip_logs
             If i > 0 Then
                 MsgBox("Check-out recorded successfully.")
 
+                sql = $"UPDATE vip_reservations SET status = 'Completed' WHERE vip_reservation_id = {reservation_id}"
+                dbcomm = New MySqlCommand(sql, conn)
+                dbcomm.ExecuteNonQuery()
+
                 sql = "SELECT vip_log_id FROM vip_logs"
                 dbcomm = New MySqlCommand(sql, conn)
                 dbread = dbcomm.ExecuteReader()
-
                 ComboBox1.Items.Clear()
                 While dbread.Read()
                     ComboBox1.Items.Add(dbread("vip_log_id").ToString())
                 End While
                 dbread.Close()
+
             Else
                 MsgBox("Check-out not recorded.")
             End If
@@ -2672,6 +2676,8 @@ End Class
 
 
 
+
+
 Imports MySql.Data.MySqlClient
 Public Class vip_reservations
     Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
@@ -2974,12 +2980,6 @@ WHERE vip_reservation_id = {vipID}"
 
 
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
-        If ComboBox2.SelectedItem Is Nothing Or ComboBox3.SelectedItem Is Nothing Or
-       ComboBox4.SelectedItem Is Nothing Or ComboBox5.SelectedItem Is Nothing Or
-       ComboBox6.SelectedItem Is Nothing Then
-            MsgBox("Please make sure all selections are filled.")
-            Exit Sub
-        End If
 
         Dim roomID = Val(ComboBox2.Text)
         Dim customerID = Val(ComboBox3.Text)
@@ -2991,6 +2991,14 @@ WHERE vip_reservation_id = {vipID}"
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
+
+            Dim selectedDate As Date = DateTimePicker1.Value.Date
+            Dim today As Date = Date.Today
+
+            If selectedDate <= Today Then
+                MsgBox("Invalid date or you cannot reserve the date today.", MsgBoxStyle.Exclamation)
+                Exit Sub
+            End If
 
             sql = $"INSERT INTO vip_reservations (customer_id, room_id,  vip_perk_id , date_reserved, time_reserved, status) VALUES 
 ('{customerID}', '{roomID}', '{vipPerks}', '{dateReserved}', '{timeReserved}', '{status}')"
@@ -3072,7 +3080,6 @@ WHERE vip_reservation_id = {vipID}"
         alerts()
     End Sub
 End Class
-
 
 
 
