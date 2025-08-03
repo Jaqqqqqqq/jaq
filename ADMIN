@@ -683,18 +683,18 @@ Public Class customer_logs
         Try
             conn.Open()
 
-            sql = "SELECT 
-                    cl.log_id,
-                    CONCAT(c.firstname, ' ', c.lastname) AS customer_name,
-                     cl.action,
-                     DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp,
-                  r.room_no,
-                   r.room_type,
-                   cl.reservation_id
-                    FROM customer_logs cl
-                    INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id
-                    INNER JOIN customers c ON rr.customer_id = c.customer_id
-                    INNER JOIN rooms r ON rr.room_id = r.room_id"
+            sql = "SELECT  " &
+                  "cl.log_id, " &
+                  "CONCAT(c.firstname, ' ', c.lastname) AS customer_name, " &
+                  "cl.action, " &
+                  "DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp, " &
+                  "r.room_no, " &
+                  "r.room_type, " &
+                  "cl.reservation_id " &
+                  "FROM customer_logs cl " &
+                  "INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id " &
+                  "INNER JOIN customers c ON rr.customer_id = c.customer_id " &
+                  "INNER JOIN rooms r ON rr.room_id = r.room_id"
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
             DataAdapter1.Fill(ds, "customer_logs")
@@ -728,9 +728,7 @@ Public Class customer_logs
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
         Try
-            If ComboBox1.SelectedItem Is Nothing OrElse ComboBox1.Text = "" Then
-                Exit Sub
-            End If
+            If ComboBox1.SelectedItem Is Nothing OrElse ComboBox1.Text = "" Then Exit Sub
 
             conn.Open()
             sql = $"SELECT reservation_id FROM customer_logs WHERE log_id = {ComboBox1.Text}"
@@ -749,20 +747,19 @@ Public Class customer_logs
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
-
             conn.Open()
-            sql = "SELECT 
-                    cl.log_id,
-                    CONCAT(c.firstname, ' ', c.lastname) AS customer_name,
-                     cl.action,
-                     DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp,
-                  r.room_no,
-                   r.room_type,
-                   cl.reservation_id
-                    FROM customer_logs cl
-                    INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id
-                    INNER JOIN customers c ON rr.customer_id = c.customer_id
-                    INNER JOIN rooms r ON rr.room_id = r.room_id"
+            sql = "SELECT  " &
+                  "cl.log_id, " &
+                  "CONCAT(c.firstname, ' ', c.lastname) AS customer_name, " &
+                  "cl.action, " &
+                  "DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp, " &
+                  "r.room_no, " &
+                  "r.room_type, " &
+                  "cl.reservation_id " &
+                  "FROM customer_logs cl " &
+                  "INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id " &
+                  "INNER JOIN customers c ON rr.customer_id = c.customer_id " &
+                  "INNER JOIN rooms r ON rr.room_id = r.room_id"
             adapter = New MySqlDataAdapter(sql, conn)
             table.Clear()
             adapter.Fill(table)
@@ -777,20 +774,19 @@ Public Class customer_logs
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Try
             conn.Open()
-            sql = $"SELECT 
-                    cl.log_id,
-                    CONCAT(c.firstname, ' ', c.lastname) AS customer_name,
-                     cl.action,
-                     DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp,
-                  r.room_no,
-                   r.room_type,
-                   cl.reservation_id
-                    FROM customer_logs cl
-                    INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id
-                    INNER JOIN customers c ON rr.customer_id = c.customer_id
-                    INNER JOIN rooms r ON rr.room_id = r.room_id
-                 WHERE log_id = {ComboBox1.Text}"
-
+            sql = "SELECT  " &
+                  "cl.log_id, " &
+                  "CONCAT(c.firstname, ' ', c.lastname) AS customer_name, " &
+                  "cl.action, " &
+                  "DATE_FORMAT(cl.log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp, " &
+                  "r.room_no, " &
+                  "r.room_type, " &
+                  "cl.reservation_id " &
+                  "FROM customer_logs cl " &
+                  "INNER JOIN room_reservations rr ON cl.reservation_id = rr.reservation_id " &
+                  "INNER JOIN customers c ON rr.customer_id = c.customer_id " &
+                  "INNER JOIN rooms r ON rr.room_id = r.room_id " &
+                  $"WHERE cl.log_id = {ComboBox1.Text}"
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
             DataAdapter1.Fill(ds, "customer_logs")
@@ -806,25 +802,21 @@ Public Class customer_logs
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
         Try
             conn.Open()
-            sql = $"INSERT INTO customer_logs (reservation_id, action) VALUES ({ComboBox3.Text}, 'check-in')"
+            sql = $"INSERT INTO customer_logs (reservation_id, action, log_timestamp) VALUES ({ComboBox3.Text}, 'check-in', NOW())"
             dbcomm = New MySqlCommand(sql, conn)
-            Dim i As Integer = dbcomm.ExecuteNonQuery
-
-            If (i > 0) Then
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
+            If i > 0 Then
                 MsgBox("check-in recorded")
-                sql = "SELECT log_d FROM customer_logs"
+                sql = "SELECT log_id FROM customer_logs"
                 dbcomm = New MySqlCommand(sql, conn)
                 dbread = dbcomm.ExecuteReader()
-
                 ComboBox1.Items.Clear()
                 While dbread.Read()
                     ComboBox1.Items.Add(dbread("log_id").ToString())
                 End While
                 dbread.Close()
-
             Else
                 MsgBox("check-in not recorded")
-
             End If
         Catch ex As Exception
             MsgBox("Error: " & ex.Message)
@@ -836,10 +828,10 @@ Public Class customer_logs
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
         Try
             conn.Open()
-            sql = $"INSERT INTO customer_logs (reservation_id, action) VALUES ({ComboBox3.Text}, 'check-out')"
+            sql = $"INSERT INTO customer_logs (reservation_id, action, log_timestamp) VALUES ({ComboBox3.Text}, 'check-out', NOW())"
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery()
-            If (i > 0) Then
+            If i > 0 Then
                 MsgBox("check-out recorded")
             Else
                 MsgBox("check-out not recorded")
@@ -859,7 +851,7 @@ Public Class customer_logs
                 sql = $"DELETE FROM customer_logs WHERE log_id = {ComboBox1.Text}"
                 dbcomm = New MySqlCommand(sql, conn)
                 Dim i As Integer = dbcomm.ExecuteNonQuery()
-                If (i > 0) Then
+                If i > 0 Then
                     MsgBox("log deleted")
                 Else
                     MsgBox("log not deleted")
@@ -879,7 +871,6 @@ Public Class customer_logs
         ComboBox3.SelectedIndex = -1
     End Sub
 End Class
-
 
 
 
