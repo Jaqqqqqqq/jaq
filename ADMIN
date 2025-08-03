@@ -2043,17 +2043,29 @@ Public Class vip_logs
     Public ds As DataSet
     Public adapter As MySqlDataAdapter
     Public table As DataTable = New DataTable()
+
     Private Sub vip_logs_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            sql = "SELECT * FROM vip_logs"
+            sql = "SELECT  " &
+                  "vl.vip_log_id, " &
+                  "CONCAT(c.firstname, ' ', c.lastname) AS customer_name, " &
+                  "vl.action, " &
+                  "DATE_FORMAT(vl.vip_log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp, " &
+                  "r.room_no, " &
+                  "r.room_type, " &
+                  "vl.vip_reservation_id " &
+                  "FROM vip_logs vl " &
+                  "INNER JOIN vip_reservations vr ON vl.vip_reservation_id = vr.vip_reservation_id " &
+                  "INNER JOIN customers c ON vr.customer_id = c.customer_id " &
+                  "INNER JOIN rooms r ON vr.room_id = r.room_id"
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
-            DataAdapter1.Fill(ds, "vip_log_id")
+            DataAdapter1.Fill(ds, "vip_logs")
             DataGridView1.DataSource = ds
-            DataGridView1.DataMember = "vip_log_id"
+            DataGridView1.DataMember = "vip_logs"
             conn.Close()
 
             conn.Open()
@@ -2061,9 +2073,17 @@ Public Class vip_logs
             dbread = dbcomm.ExecuteReader()
 
             While dbread.Read()
-                ComboBox1.Items.Add(dbread("vip_log_id"))
+                ComboBox1.Items.Add(dbread("vip_log_id").ToString())
             End While
+            dbread.Close()
 
+            sql = "SELECT vip_reservation_id FROM vip_reservations"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox3.Items.Clear()
+            While dbread.Read()
+                ComboBox3.Items.Add(dbread("vip_reservation_id").ToString())
+            End While
             dbread.Close()
 
         Catch ex As Exception
@@ -2074,70 +2094,55 @@ Public Class vip_logs
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        If ComboBox1.SelectedItem Is Nothing OrElse ComboBox1.Text = "" Then
+            Exit Sub
+        End If
         Dim viplogid As String = ComboBox1.Text
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
+
             sql = "SELECT * FROM vip_logs WHERE vip_log_id = " & viplogid
-
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             dbread.Read()
+            ComboBox1.Text = dbread("vip_log_id").ToString()
 
-            ComboBox1.Text = dbread("vip_log_id")
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
         Catch ex As Exception
-            MsgBox(ex.Message)
-
+            MsgBox("Error: " & ex.Message)
+        Finally
+            conn.Close()
         End Try
-        conn.Close()
-    End Sub
-
-    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
-        Dim vipID As String = ComboBox3.Text
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-            sql = "SELECT * FROM vip_logs WHERE vip_log_id = " & vipID
-
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-            ComboBox3.Text = dbread("vip_log_id")
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-
-        End Try
-        conn.Close()
     End Sub
 
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
         Dim action = "check in"
         Dim reservation_id = ComboBox3.SelectedItem.ToString()
-        Dim timein = DateTime.Now.ToString("HH:mm:ss")
 
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = $"INSERT INTO vip_logs (reservation_id, action, time_in VALUES('{reservation_id}', '{action}', '{timein}')"
 
+            sql = $"INSERT INTO vip_logs (vip_reservation_id, action, vip_log_timestamp) VALUES ({reservation_id}, '{action}', NOW())"
             dbcomm = New MySqlCommand(sql, conn)
-            Dim i As Integer = dbcomm.ExecuteNonQuery
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
 
-            If (i > 0) Then
-                MsgBox("Record saved successfully.")
+            If i > 0 Then
+                MsgBox("Check-in recorded successfully.")
+                sql = "SELECT log_id FROM vip_logs"
+                dbcomm = New MySqlCommand(sql, conn)
+                dbread = dbcomm.ExecuteReader()
+                ComboBox1.Items.Clear()
+                While dbread.Read()
+                    ComboBox1.Items.Add(dbread("vip_log_id").ToString())
+                End While
+                dbread.Close()
             Else
-                MsgBox("Record not saved.")
+                MsgBox("Check-in not recorded.")
             End If
 
-        Catch ex As MySqlException
-            MsgBox("Staff not created. Error: " & ex.Message)
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
         Finally
             conn.Close()
         End Try
@@ -2146,18 +2151,18 @@ Public Class vip_logs
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
         Dim action = "check out"
         Dim reservation_id = ComboBox3.SelectedItem.ToString()
-        Dim timein = DateTime.Now.ToString("HH:mm:ss")
 
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = $"INSERT INTO vip_logs (reservation_id, action, time_in VALUES('{reservation_id}', '{action}', '{timein}')"
 
+            sql = $"INSERT INTO vip_logs (vip_reservation_id, action, vip_log_timestamp) VALUES ({reservation_id}, '{action}', NOW())"
             dbcomm = New MySqlCommand(sql, conn)
-            Dim i As Integer = dbcomm.ExecuteNonQuery
+            Dim i As Integer = dbcomm.ExecuteNonQuery()
 
-            If (i > 0) Then
-                MsgBox("Record saved successfully.")
+            If i > 0 Then
+                MsgBox("Check-out recorded successfully.")
+
                 sql = "SELECT vip_log_id FROM vip_logs"
                 dbcomm = New MySqlCommand(sql, conn)
                 dbread = dbcomm.ExecuteReader()
@@ -2167,13 +2172,12 @@ Public Class vip_logs
                     ComboBox1.Items.Add(dbread("vip_log_id").ToString())
                 End While
                 dbread.Close()
-
             Else
-                MsgBox("Record not saved.")
+                MsgBox("Check-out not recorded.")
             End If
 
-        Catch ex As MySqlException
-            MsgBox("Staff not created. Error: " & ex.Message)
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
         Finally
             conn.Close()
         End Try
@@ -2181,13 +2185,22 @@ Public Class vip_logs
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
-            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            Dim query As String = "SELECT * FROM vip_logs"
-            adapter = New MySqlDataAdapter(query, conn)
+            sql = "SELECT  " &
+                  "vl.vip_log_id, " &
+                  "CONCAT(c.firstname, ' ', c.lastname) AS customer_name, " &
+                  "vl.action, " &
+                  "DATE_FORMAT(vl.vip_log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp, " &
+                  "r.room_no, " &
+                  "r.room_type, " &
+                  "vl.vip_reservation_id " &
+                  "FROM vip_logs vl " &
+                  "INNER JOIN vip_reservations vr ON vl.vip_reservation_id = vr.vip_reservation_id " &
+                  "INNER JOIN customers c ON vr.customer_id = c.customer_id " &
+                  "INNER JOIN rooms r ON vr.room_id = r.room_id"
+            adapter = New MySqlDataAdapter(sql, conn)
             table.Clear()
             adapter.Fill(table)
-            DataGridView1.DataSource = Nothing
             DataGridView1.DataSource = table
         Catch ex As Exception
             MessageBox.Show("Error loading data: " & ex.Message)
@@ -2197,30 +2210,29 @@ Public Class vip_logs
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
-        Dim viplogid = ComboBox1.SelectedItem.ToString()
-        Dim vipID = ComboBox3.SelectedItem.ToString()
-
         Try
-            If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = $"SELECT * FROM vip_logs WHERE vip_log_id = {Val(ComboBox1.SelectedItem)}"
+            sql = "SELECT  " &
+                  "vl.vip_log_id, " &
+                  "CONCAT(c.firstname, ' ', c.lastname) AS customer_name, " &
+                  "vl.action, " &
+                  "DATE_FORMAT(vl.vip_log_timestamp, '%Y-%m-%d %H:%i:%s') AS log_timestamp, " &
+                  "r.room_no, " &
+                  "r.room_type, " &
+                  "vl.vip_reservation_id " &
+                  "FROM vip_logs vl " &
+                  "INNER JOIN vip_reservations vr ON vl.vip_reservation_id = vr.vip_reservation_id " &
+                  "INNER JOIN customers c ON vr.customer_id = c.customer_id " &
+                  "INNER JOIN rooms r ON vr.room_id = r.room_id " &
+                  $"WHERE vl.vip_log_id = {ComboBox1.Text}"
+
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
             DataAdapter1.Fill(ds, "vip_logs")
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "vip_logs"
-
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-
-            ComboBox1.Items.Clear()
-            While dbread.Read()
-                ComboBox1.Items.Add(dbread("vip_log_id"))
-            End While
-
-            dbread.Close()
         Catch ex As Exception
-            MsgBox("Error in collecting data from Database. Error is :" & ex.Message)
+            MsgBox("Error: " & ex.Message)
         Finally
             conn.Close()
         End Try
@@ -2228,33 +2240,31 @@ Public Class vip_logs
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
         Dim viplogid = ComboBox1.SelectedItem.ToString()
-        Dim i As Integer
+
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            Dim ans = MessageBox.Show("do you want to delete this record?", "record deleted", MessageBoxButtons.YesNoCancel)
+            Dim ans = MessageBox.Show("Do you want to delete this record?", "Confirm Delete", MessageBoxButtons.YesNoCancel)
             If ans = DialogResult.Yes Then
                 sql = $"DELETE FROM vip_logs WHERE vip_log_id = {viplogid}"
                 dbcomm = New MySqlCommand(sql, conn)
-                i = dbcomm.ExecuteNonQuery
-
-                If (i > 0) Then
-                    MsgBox("record deleted")
+                Dim i As Integer = dbcomm.ExecuteNonQuery()
+                If i > 0 Then
+                    MsgBox("Record deleted.")
                 Else
-                    MsgBox("record not deleted")
+                    MsgBox("Record not deleted.")
                 End If
             End If
 
             ComboBox1.SelectedIndex = -1
             ComboBox3.SelectedIndex = -1
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
 
+        Catch ex As Exception
+            MsgBox("Error deleting record: " & ex.Message)
+        Finally
+            conn.Close()
         End Try
-        conn.Close()
     End Sub
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
@@ -2267,7 +2277,6 @@ Public Class vip_logs
         admin_buttons.Show()
     End Sub
 End Class
-
 
 
 
