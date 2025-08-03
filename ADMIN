@@ -5423,6 +5423,244 @@ End Class
 
 
 
------
+                                        ----------------------------------------------------------------------------
+                                                               •	menu has ingredients
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class food_has_ingredients
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub food_has_ingredients_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT m.menu_id, m.name AS food_name, m.flavor, f.food_id, f.name AS ingredient_name " &
+                  "FROM menu_has_ingredients mh " &
+                  "JOIN menu m ON mh.menu_id = m.menu_id " &
+                  "JOIN food_inventory f ON mh.food_id = f.food_id"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            DataAdapter1.Fill(table)
+            DataGridView1.DataSource = table
+            DataGridView1.AutoGenerateColumns = True
+
+            sql = "SELECT menu_id FROM menu"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox1.Items.Clear()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("menu_id"))
+            End While
+            dbread.Close()
+
+            sql = "SELECT food_id FROM food_inventory ORDER BY food_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox3.Items.Clear()
+            While dbread.Read()
+                ComboBox3.Items.Add(dbread("food_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim menuID = Val(ComboBox1.SelectedItem)
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            sql = "SELECT * FROM menu WHERE menu_id = " & menuID
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            dbread.Read()
+        Catch ex As Exception
+            MsgBox("Error loading menu details: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            sql = "SELECT m.menu_id, m.name AS food_name, m.flavor, f.food_id, f.name AS ingredient_name " &
+              "FROM menu_has_ingredients mh " &
+              "JOIN menu m ON mh.menu_id = m.menu_id " &
+              "JOIN food_inventory f ON mh.food_id = f.food_id "
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+        Catch ex As Exception
+            MessageBox.Show("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Dim menuID = Val(ComboBox1.SelectedItem)
+        Dim foodID = Val(ComboBox3.SelectedItem)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT m.menu_id, m.name AS food_name, m.flavor, f.food_id, f.name AS ingredient_name " &
+              "FROM menu_has_ingredients mh " &
+              "JOIN menu m ON mh.menu_id = m.menu_id " &
+              "JOIN food_inventory f ON mh.food_id = f.food_id "
+
+            If menuID > 0 And foodID > 0 Then
+                sql &= $"WHERE mh.menu_id = {menuID} AND mh.food_id = {foodID}"
+            ElseIf menuID > 0 Then
+                sql &= $"WHERE mh.menu_id = {menuID}"
+            ElseIf foodID > 0 Then
+                sql &= $"WHERE mh.food_id = {foodID}"
+            End If
+
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+        Catch ex As Exception
+            MsgBox("Error filtering data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+
+    Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
+        Dim menuID = Val(ComboBox1.SelectedItem)
+        Dim foodID = Val(ComboBox3.SelectedItem)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"INSERT INTO menu_has_ingredients (menu_id, food_id) VALUES({menuID}, {foodID})"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If i > 0 Then
+                MsgBox("Record saved successfully.")
+            Else
+                MsgBox("Record not saved.")
+            End If
+
+            ComboBox1.SelectedIndex = -1
+            ComboBox3.SelectedIndex = -1
+        Catch ex As Exception
+            MsgBox("Error inserting record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Dim menuID = Val(ComboBox1.SelectedItem)
+        Dim foodID = Val(ComboBox3.SelectedItem)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"UPDATE menu_has_ingredients SET food_id = {foodID} WHERE menu_id = {menuID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If i > 0 Then
+                MsgBox("Record updated.")
+            Else
+                MsgBox("Record not updated.")
+            End If
+        Catch ex As Exception
+            MsgBox("Error updating record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Dim menuID = Val(ComboBox1.SelectedItem)
+        Dim foodID = Val(ComboBox3.SelectedItem)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim ans = MessageBox.Show("Do you want to delete this record?", "Delete Record", MessageBoxButtons.YesNoCancel)
+            If ans = DialogResult.Yes Then
+                sql = $"DELETE FROM menu_has_ingredients WHERE menu_id = {menuID} AND food_id = {foodID}"
+                dbcomm = New MySqlCommand(sql, conn)
+                Dim i As Integer = dbcomm.ExecuteNonQuery
+
+                If i > 0 Then
+                    MsgBox("Record deleted.")
+                Else
+                    MsgBox("Record not deleted.")
+                End If
+            End If
+
+            ComboBox1.SelectedIndex = -1
+            ComboBox3.SelectedIndex = -1
+        Catch ex As Exception
+            MsgBox("Error deleting record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        ComboBox1.SelectedIndex = -1
+        ComboBox3.SelectedIndex = -1
+    End Sub
+
+    Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
+        Me.Hide()
+        admin_buttons.Show()
+    End Sub
+End Class
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
