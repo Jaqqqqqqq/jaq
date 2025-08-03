@@ -4741,7 +4741,11 @@ End Class
 
 
 
--------------------------------------------------------------    CUSTOMER PAYMENTS   -----------------------------------------------------------------------------------
+                                        ----------------------------------------------------------------------------
+                                                     CUSTOMER PAYMENTS
+                                        ----------------------------------------------------------------------------
+
+
 
 
 
@@ -4770,35 +4774,27 @@ Public Class customer_payments
             conn.Open()
 
             sql = $"SELECT * FROM customer_payments"
-            DataAdapter1 = New MySqlDataAdapter(Sql, conn)
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
             DataAdapter1.Fill(ds, "customer_payments")
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "customer_payments"
-            conn.Close()
 
-            conn.Open()
-            dbcomm = New MySqlCommand(Sql, conn)
+            dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-
             ComboBox1.Items.Clear()
             While dbread.Read()
                 ComboBox1.Items.Add(dbread("payment_id"))
             End While
+            dbread.Close()
 
+            sql = "SELECT customer_id FROM customers"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
             ComboBox2.Items.Clear()
             While dbread.Read()
-                ComboBox2.Items.Add(dbread("customer_id"))
+                ComboBox2.Items.Add(dbread("customer_id").ToString())
             End While
-
-
-            ComboBox3.Items.Clear()
-            ComboBox3.Items.Add("Reservation")
-            ComboBox3.Items.Add("Order")
-            ComboBox3.Items.Add("VIP")
-            ComboBox3.Items.Add("Amount paid")
-            ComboBox3.SelectedIndex = 0
-
             dbread.Close()
 
         Catch ex As Exception
@@ -4806,9 +4802,18 @@ Public Class customer_payments
         Finally
             conn.Close()
         End Try
+        ComboBox3.Items.Clear()
+        ComboBox3.Items.Add("Reservation")
+        ComboBox3.Items.Add("Order")
+        ComboBox3.Items.Add("VIP")
+        ComboBox3.Items.Add("Cancellation Fee")
+        ComboBox3.SelectedIndex = 0
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        If ComboBox1.SelectedItem Is Nothing OrElse ComboBox1.Text = "" Then
+            Exit Sub
+        End If
         Dim payID As String = ComboBox1.Text
         Try
             conn.Open()
@@ -4816,13 +4821,12 @@ Public Class customer_payments
 
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
-            dbread.Read()
+            If dbread.Read() Then
 
-            TextBox1.Text = dbread("amount_paid")
-            ComboBox2.Text = dbread("customer_id")
-            ComboBox3.Text = dbread("action")
-            DateTimePicker1.Value = DateTime.Now
-
+                TextBox1.Text = dbread("amount_paid")
+                ComboBox2.Text = dbread("customer_id")
+                ComboBox3.Text = dbread("action")
+            End If
         Catch ex As MySqlException
             MsgBox(ex.Message)
         Catch ex As Exception
@@ -4832,53 +4836,6 @@ Public Class customer_payments
         conn.Close()
     End Sub
 
-    Private Sub ComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox2.SelectedIndexChanged
-        Dim customerID As String = ComboBox2.Text
-        Try
-            conn.Open()
-            sql = "SELECT * FROM customer_payments WHERE customer_id = " & customerID
-
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-            TextBox1.Text = dbread("amount_paid")
-            ComboBox1.Text = dbread("payment_id")
-            ComboBox3.Text = dbread("action")
-            DateTimePicker1.Value = DateTime.Now
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-
-        End Try
-        conn.Close()
-    End Sub
-
-    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
-        Dim action As String = ComboBox3.Text
-        Try
-            conn.Open()
-            sql = "SELECT * FROM customer_payments WHERE action = " & action
-
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-
-            TextBox1.Text = dbread("amount_paid")
-            ComboBox2.Text = dbread("customer_id")
-            ComboBox1.Text = dbread("payment_id")
-            DateTimePicker1.Value = DateTime.Now
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-
-        End Try
-        conn.Close()
-    End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
@@ -4900,11 +4857,7 @@ Public Class customer_payments
         Try
             conn.Open()
 
-            Dim amountPaid = TextBox1.Text
             Dim payID = ComboBox1.SelectedItem.ToString()
-            Dim customerID = ComboBox2.SelectedItem.ToString()
-            Dim action = ComboBox3.SelectedItem.ToString()
-            Dim paidDate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
 
             sql = $"SELECT * FROM customer_payments WHERE payment_id = {payID}"
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
@@ -4930,22 +4883,30 @@ Public Class customer_payments
     End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
-        Dim amountPaid = TextBox1.Text
-        Dim payID = ComboBox1.SelectedItem.ToString()
+        Dim amountPaid = Convert.ToDecimal(TextBox1.Text)
         Dim customerID = ComboBox2.SelectedItem.ToString()
         Dim action = ComboBox3.SelectedItem.ToString()
-        Dim paidDate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
 
         Try
             conn.Open()
-            sql = $"INSERT INTO customer_payments (customer_id, action, amount_paid, paid_date) VALUES( 
-            '{customerID}', '{action}', '{amountPaid}', '{paidDate}')"
+            sql = $"INSERT INTO customer_payments (customer_id, action, amount_paid, timestamp) VALUES( 
+            '{customerID}', '{action}', '{amountPaid}',  NOW())"
 
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
 
             If (i > 0) Then
                 MsgBox("Record saved successfully.")
+                sql = "SELECT payment_id FROM customer_payments"
+                dbcomm = New MySqlCommand(sql, conn)
+                dbread = dbcomm.ExecuteReader()
+
+                ComboBox1.Items.Clear()
+                While dbread.Read()
+                    ComboBox1.Items.Add(dbread("payment_id").ToString())
+                End While
+                dbread.Close()
+
             Else
                 MsgBox("Record not saved.")
             End If
@@ -4962,12 +4923,11 @@ Public Class customer_payments
         Dim payID = ComboBox1.SelectedItem.ToString()
         Dim customerID = ComboBox2.SelectedItem.ToString()
         Dim action = ComboBox3.SelectedItem.ToString()
-        Dim paidDate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
         Try
             conn.Open()
 
             sql = $"UPDATE customer_payments SET customer_id = '{customerID}', action = '{action}', amount_paid = '{amountPaid}', 
-paid_date = '{paidDate}' WHERE payment_id = {payID}"
+timestamp = NOW() WHERE payment_id = {payID}"
 
             dbcomm = New MySqlCommand(sql, conn)
             Dim i As Integer = dbcomm.ExecuteNonQuery
@@ -4985,47 +4945,13 @@ paid_date = '{paidDate}' WHERE payment_id = {payID}"
         conn.Close()
     End Sub
 
-    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
-        Dim customerID = ComboBox2.SelectedItem.ToString()
-        Dim i As Integer
-        Try
-            conn.Open()
-
-            Dim ans = MessageBox.Show("do you want to delete this record?", "record deleted", MessageBoxButtons.YesNoCancel)
-            If ans = DialogResult.Yes Then
-                sql = $"DELETE FROM customers WHERE customer_id = {customerID}"
-                dbcomm = New MySqlCommand(sql, conn)
-                i = dbcomm.ExecuteNonQuery
-
-                If (i > 0) Then
-                    MsgBox("record deleted")
-                Else
-                    MsgBox("record not deleted")
-                End If
-            End If
-            TextBox1.Clear()
-            ComboBox1.SelectedIndex = -1
-            ComboBox2.SelectedIndex = -1
-            ComboBox3.SelectedIndex = -1
-            DateTimePicker1.Value = DateTime.Now
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-
-        End Try
-        conn.Close()
-    End Sub
-
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
         TextBox1.Clear()
         ComboBox1.SelectedIndex = -1
         ComboBox2.SelectedIndex = -1
         ComboBox3.SelectedIndex = -1
-        DateTimePicker1.Value = DateTime.Now
     End Sub
 End Class
-
 
 
 
