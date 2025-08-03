@@ -1,1 +1,525 @@
+                                        ----------------------------------------------------------------------------
+                                                  EQUIPMENT INVENTORY
+                                        ----------------------------------------------------------------------------
 
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class es_equipment_inventory
+
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub alerts()
+        For Each row As DataGridViewRow In DataGridView1.Rows
+            If row.IsNewRow Then Continue For
+
+            Dim status = row.Cells("status").Value
+            Dim quantity = row.Cells("quantity").Value
+
+            If status = "Broken" Then
+                row.DefaultCellStyle.BackColor = Color.Red
+                row.DefaultCellStyle.ForeColor = Color.Black
+            ElseIf status = "Under Repair" Then
+                row.DefaultCellStyle.BackColor = Color.Blue
+                row.DefaultCellStyle.ForeColor = Color.White
+            ElseIf Val(quantity) < 2 Then
+                row.DefaultCellStyle.BackColor = Color.Orange
+                row.DefaultCellStyle.ForeColor = Color.Black
+            End If
+        Next
+    End Sub
+
+    Private Sub es_equipment_inventory_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM equipment_inventory"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "equipment_inventory")
+            DataGridView1.DataSource = ds.Tables("equipment_inventory")
+
+            ComboBox1.Items.Clear()
+            sql = "SELECT equipment_id FROM equipment_inventory ORDER BY equipment_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            If dbread IsNot Nothing AndAlso Not dbread.IsClosed Then dbread.Close()
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("equipment_id"))
+            End While
+            dbread.Close()
+
+            ComboBox3.Items.Clear()
+            sql = "SELECT supplier_id FROM suppliers"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox3.Items.Add(dbread("supplier_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        ComboBox4.Items.Clear()
+        ComboBox4.Items.AddRange({"Working", "Broken", "Under Repair"})
+        ComboBox4.SelectedIndex = 0
+        alerts()
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim equipID = Val(ComboBox1.SelectedItem)
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = $"SELECT * FROM equipment_inventory WHERE equipment_id = {equipID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            If dbread.Read() Then
+                TextBox1.Text = dbread("name")
+                TextBox2.Text = dbread("quantity")
+                DateTimePicker1.Value = Convert.ToDateTime(dbread("last_restock"))
+                ComboBox4.Text = dbread("status")
+                ComboBox3.Text = dbread("supplier_id")
+            End If
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading equipment data: " & ex.Message, MsgBoxStyle.Critical)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            Dim query As String = "SELECT * FROM equipment_inventory"
+            adapter = New MySqlDataAdapter(query, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = Nothing
+            DataGridView1.DataSource = table
+
+            alerts()
+
+            ComboBox1.Items.Clear()
+            sql = "SELECT equipment_id FROM equipment_inventory"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("equipment_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error refreshing data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim equipID = Val(ComboBox1.SelectedItem)
+            Dim supplierID = Val(ComboBox3.SelectedItem)
+
+            sql = $"SELECT * FROM equipment_inventory WHERE equipment_id = {equipID} AND supplier_id = {supplierID}"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "equipment_inventory")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "equipment_inventory"
+
+        Catch ex As Exception
+            MsgBox("Error filtering records: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
+        Dim name = TextBox1.Text
+        Dim quantity = Val(TextBox2.Text)
+        Dim last_restock = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim status = ComboBox4.SelectedItem.ToString()
+        Dim supplierID = Val(ComboBox3.SelectedItem)
+
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            alerts()
+            sql = $"INSERT INTO equipment_inventory (supplier_id, name, quantity, last_restock, status) VALUES( {supplierID},'{name}', {quantity}, '{last_restock}', '{status}')"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If (i > 0) Then
+                MsgBox("Record saved successfully.")
+                sql = "SELECT equipment_id FROM equipment_inventory"
+                dbcomm = New MySqlCommand(sql, conn)
+                dbread = dbcomm.ExecuteReader()
+
+                ComboBox1.Items.Clear()
+                While dbread.Read()
+                    ComboBox1.Items.Add(dbread("equipment_id").ToString())
+                End While
+                dbread.Close()
+
+            Else
+                MsgBox("Record not saved.")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error saving record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Dim name = TextBox1.Text
+        Dim quantity = Val(TextBox2.Text)
+        Dim last_restock = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+        Dim status = ComboBox4.SelectedItem.ToString()
+        Dim supplierID = Val(ComboBox3.SelectedItem)
+        Dim equipID = Val(ComboBox1.SelectedItem)
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            alerts()
+
+            sql = $"UPDATE equipment_inventory SET supplier_id = {supplierID}, name = '{name}', quantity = {quantity}, last_restock = '{last_restock}', status = '{status}' WHERE equipment_id = {equipID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If (i > 0) Then
+                MsgBox("Record updated")
+            Else
+                MsgBox("Record not updated")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error updating record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Dim equipID = Val(ComboBox1.SelectedItem)
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            Dim ans = MessageBox.Show("Do you want to delete this record?", "Confirm Deletion", MessageBoxButtons.YesNoCancel)
+            If ans = DialogResult.Yes Then
+                sql = $"DELETE FROM equipment_inventory WHERE equipment_id = {equipID}"
+                dbcomm = New MySqlCommand(sql, conn)
+                Dim i As Integer = dbcomm.ExecuteNonQuery
+
+                If (i > 0) Then
+                    MsgBox("Equipment deleted")
+                Else
+                    MsgBox("Equipment not deleted")
+                End If
+            End If
+
+            TextBox1.Text = ""
+            TextBox2.Text = ""
+            ComboBox1.SelectedIndex = -1
+            ComboBox3.SelectedIndex = -1
+            ComboBox4.SelectedIndex = -1
+            DateTimePicker1.Value = DateTime.Now
+        Catch ex As Exception
+            MsgBox("Error deleting record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+        alerts()
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        TextBox1.Text = ""
+        TextBox2.Text = ""
+        ComboBox1.SelectedIndex = -1
+        ComboBox3.SelectedIndex = -1
+        ComboBox4.SelectedIndex = -1
+        DateTimePicker1.Value = DateTime.Now
+        alerts()
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Me.Hide()
+        admin_buttons.Show()
+    End Sub
+End Class
+
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                      SUPPLIIER TRANSAC
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class es_supplier_transactions
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+
+    Private Sub es_supplier_transactions_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM supplier_transactions WHERE supplier_type = 'Equipment'"
+            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            DataAdapter1.Fill(ds, "supplier_transactions")
+            DataGridView1.DataSource = ds
+            DataGridView1.DataMember = "supplier_transactions"
+
+            sql = "SELECT transaction_id FROM supplier_transactions WHERE supplier_type = 'Equipment' ORDER BY transaction_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox1.Items.Clear()
+            While dbread.Read()
+                ComboBox1.Items.Add(dbread("transaction_id"))
+            End While
+            dbread.Close()
+
+            sql = "SELECT supplier_id FROM suppliers ORDER BY supplier_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox2.Items.Clear()
+            While dbread.Read()
+                ComboBox2.Items.Add(dbread("supplier_id"))
+            End While
+            dbread.Close()
+
+            sql = "SELECT equipment_id FROM equipment_inventory ORDER BY equipment_id ASC"
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+            ComboBox4.Items.Clear()
+            While dbread.Read()
+                ComboBox4.Items.Add(dbread("equipment_id"))
+            End While
+            dbread.Close()
+
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+        ComboBox5.Items.Clear()
+        ComboBox5.Items.Add("Delivered")
+        ComboBox5.Items.Add("Cancelled")
+        ComboBox5.SelectedIndex = 0
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        Dim transactionID As String = ComboBox1.Text
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            sql = "SELECT * FROM supplier_transactions WHERE transaction_id = " & transactionID
+            dbcomm = New MySqlCommand(sql, conn)
+            dbread = dbcomm.ExecuteReader()
+
+            If dbread.HasRows Then
+                dbread.Read()
+                TextBox1.Text = dbread("shipping_fee").ToString()
+                TextBox2.Text = dbread("purchase_amount").ToString()
+                TextBox3.Text = dbread("quantity").ToString()
+                ComboBox5.Text = dbread("status").ToString()
+                ComboBox2.Text = dbread("supplier_id").ToString()
+                If Not IsDBNull(dbread("date_delivered")) Then
+                    DateTimePicker1.Value = Convert.ToDateTime(dbread("date_delivered"))
+                Else
+                    DateTimePicker1.Value = DateTime.Now
+                End If
+            Else
+                MsgBox("No data found for Transaction ID " & transactionID)
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            If dbread IsNot Nothing AndAlso Not dbread.IsClosed Then dbread.Close()
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+            Dim query As String = "SELECT * FROM supplier_transactions WHERE supplier_type = 'Equipment'"
+            adapter = New MySqlDataAdapter(query, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = Nothing
+            DataGridView1.DataSource = table
+        Catch ex As Exception
+            MsgBox("Error loading data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim transactionID As Integer = Val(ComboBox1.SelectedItem)
+            sql = "SELECT st.transaction_id, st.supplier_id, et.equipment_id, st.supplier_type, st.date_delivered, st.shipping_fee, " &
+                  "st.purchase_amount, st.quantity, st.status " &
+                  "FROM supplier_transactions st " &
+                  "INNER JOIN equipment_transaction_details et ON st.transaction_id = et.transaction_id " &
+                  "WHERE st.transaction_id = " & transactionID
+
+            adapter = New MySqlDataAdapter(sql, conn)
+            ds = New DataSet()
+            adapter.Fill(ds, "supplier_transactions")
+            DataGridView1.DataSource = ds.Tables("supplier_transactions")
+
+        Catch ex As Exception
+            MsgBox("Error collecting data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim shipping As Decimal = Convert.ToDecimal(TextBox1.Text)
+            Dim purchase As Decimal = Convert.ToDecimal(TextBox2.Text)
+            Dim supplierID = Val(ComboBox2.Text)
+            Dim equipmentID = Val(ComboBox4.Text)
+            Dim date_d = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+            Dim quantity = Val(TextBox3.Text)
+            Dim status = ComboBox5.Text
+            Dim transactionID As Integer
+            Dim i As Integer = 0
+
+            sql = $"INSERT INTO supplier_transactions (supplier_id, supplier_type, date_delivered, shipping_fee, purchase_amount, quantity, status) " &
+                  $"VALUES({supplierID}, 'Equipment', '{date_d}', {shipping}, {purchase}, {quantity}, '{status}')"
+            dbcomm = New MySqlCommand(sql, conn)
+            i = dbcomm.ExecuteNonQuery()
+
+            If i > 0 Then
+                sql = "SELECT LAST_INSERT_ID()"
+                dbcomm = New MySqlCommand(sql, conn)
+                transactionID = Convert.ToInt32(dbcomm.ExecuteScalar())
+
+                sql = $"INSERT INTO equipment_transaction_details (transaction_id, equipment_id) VALUES({transactionID}, {equipmentID})"
+                dbcomm = New MySqlCommand(sql, conn)
+                i = dbcomm.ExecuteNonQuery()
+
+                If i > 0 Then
+                    MsgBox("Transaction saved.")
+                Else
+                    MsgBox("Transaction detail not saved.")
+                End If
+            Else
+                MsgBox("Transaction not saved.")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim shipping As Decimal = Convert.ToDecimal(TextBox1.Text)
+            Dim purchase As Decimal = Convert.ToDecimal(TextBox2.Text)
+            Dim transactionID = Val(ComboBox1.SelectedItem)
+            Dim supplierID = Val(ComboBox2.SelectedItem)
+            Dim equipmentID = Val(ComboBox4.SelectedItem)
+            Dim date_d = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+            Dim quantity = Val(TextBox3.Text)
+            Dim status = ComboBox5.SelectedItem
+
+            sql = $"UPDATE supplier_transactions SET supplier_id = {supplierID}, supplier_type = 'Equipment', 
+                    date_delivered = '{date_d}', shipping_fee = {shipping}, purchase_amount = {purchase}, 
+                    quantity = {quantity} , status = '{status}' WHERE transaction_id = {transactionID}"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If i > 0 Then
+                sql = $"UPDATE equipment_transaction_details SET equipment_id = {equipmentID} WHERE transaction_id = {transactionID}"
+                dbcomm = New MySqlCommand(sql, conn)
+                i = dbcomm.ExecuteNonQuery
+                MsgBox("Record updated.")
+            Else
+                MsgBox("Update failed.")
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error updating record: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        TextBox1.Clear()
+        TextBox2.Clear()
+        TextBox3.Clear()
+        ComboBox1.SelectedIndex = -1
+        ComboBox2.SelectedIndex = -1
+        ComboBox4.SelectedIndex = -1
+        ComboBox5.SelectedIndex = 0
+        DateTimePicker1.Value = DateTime.Now
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Me.Hide()
+        admin_buttons.Show()
+    End Sub
+End Class
