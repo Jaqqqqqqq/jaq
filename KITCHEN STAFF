@@ -626,7 +626,40 @@ INNER JOIN rooms r ON rr.room_id = r.room_id
         End Try
         alerts()
     End Sub
+Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
 
+    Dim orderID = Val(ComboBox1.SelectedItem)
+    Dim menuID = Val(ComboBox3.SelectedItem)
+    Dim quantity = TextBox1.Text
+    Dim reservationID = Val(ComboBox4.SelectedItem)
+    Dim status = ComboBox5.SelectedItem
+    Dim details = TextBox2.Text
+    If details = "" Then details = "N/A"
+
+
+    Try
+        conn.Open()
+
+        sql = $"UPDATE food_orderline SET reservation_id = {reservationID}, menu_id = {menuID}, quantity = {quantity}, status = '{status}', 
+               details = '{details}' WHERE order_id = {orderID}"
+
+        dbcomm = New MySqlCommand(sql, conn)
+        Dim i As Integer = dbcomm.ExecuteNonQuery()
+
+        If i > 0 Then
+            MsgBox("Record updated successfully.")
+        Else
+            MsgBox("No record was updated. Please check the Order ID.")
+        End If
+
+    Catch ex As Exception
+        MsgBox("Error updating record: " & ex.Message)
+    Finally
+        conn.Close()
+    End Try
+    conn.Close()
+    alerts()
+End Sub
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
         Me.Hide()
