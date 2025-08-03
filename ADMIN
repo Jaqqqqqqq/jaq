@@ -1378,6 +1378,7 @@ Public Class food_inventory
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "food_inventory"
 
+            sql = "SELECT food_id FROM food_inventory ORDER BY food_id ASC"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             While dbread.Read()
@@ -1387,7 +1388,7 @@ Public Class food_inventory
 
             alerts()
 
-            sql = "SELECT supplier_id FROM suppliers"
+            sql = "SELECT supplier_id FROM suppliers ORDER BY supplier_id ASC"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             ComboBox3.Items.Clear()
@@ -1409,8 +1410,6 @@ Public Class food_inventory
         End Try
     End Sub
 
-
-
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
         Dim foodID = Val(ComboBox1.SelectedItem)
 
@@ -1422,9 +1421,7 @@ Public Class food_inventory
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
 
-            alerts()
-
-            If dbread.HasRows AndAlso dbread.Read() Then
+            If dbread.Read() Then
                 TextBox1.Text = dbread("name")
                 TextBox2.Text = dbread("quantity").ToString()
                 TextBox3.Text = dbread("unit")
@@ -1439,6 +1436,7 @@ Public Class food_inventory
         Finally
             conn.Close()
         End Try
+        alerts()
     End Sub
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
@@ -1474,43 +1472,6 @@ Public Class food_inventory
         End Try
     End Sub
 
-    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
-        Dim supplierID = Val(ComboBox3.Text)
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-            sql = $"SELECT * FROM suppliers WHERE supplier_id = {supplierID}"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            If dbread.HasRows Then dbread.Read()
-
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-        conn.Close()
-    End Sub
-
-    Private Sub ComboBox4_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox4.SelectedIndexChanged
-        Dim status = ComboBox4.Text
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-            sql = $"SELECT * FROM food_inventory WHERE status = '{status}'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            If dbread.HasRows Then dbread.Read()
-
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        End Try
-        conn.Close()
-    End Sub
-
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
@@ -1523,7 +1484,7 @@ Public Class food_inventory
             DataGridView1.DataSource = table
 
             ComboBox1.Items.Clear()
-            sql = "SELECT food_id FROM food_inventory"
+            sql = "SELECT food_id FROM food_inventory ORDER BY food_id ASC"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             While dbread.Read()
