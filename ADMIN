@@ -6970,3 +6970,89 @@ Public Class sales
         ComboBox3.SelectedIndex = 0
     End Sub
 End Class
+
+
+
+
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                      INCOME
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class finance
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim totalSales As Decimal = 0
+            Dim totalExpenses As Decimal = 0
+
+            sql = "SELECT SUM(net_amount) FROM sales"
+            dbcomm = New MySqlCommand(sql, conn)
+            totalSales = Convert.ToDecimal(dbcomm.ExecuteScalar())
+
+            sql = "SELECT SUM(amount) FROM expenses"
+            dbcomm = New MySqlCommand(sql, conn)
+            totalExpenses = Convert.ToDecimal(dbcomm.ExecuteScalar())
+
+            Dim income As Decimal = totalSales - totalExpenses
+            TextBox2.Text = "Total Income: ₱" & income.ToString("F2")
+
+        Catch ex As Exception
+            MsgBox("Error calculating income: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            If conn.State = ConnectionState.Open Then conn.Close()
+            conn.Open()
+
+            Dim startDate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+            Dim endDate = DateTimePicker2.Value.ToString("yyyy-MM-dd")
+
+            Dim rangeSales As Decimal = 0
+            Dim rangeExpenses As Decimal = 0
+
+            sql = $"SELECT SUM(net_amount) FROM sales WHERE DATE(timestamp) BETWEEN '{startDate}' AND '{endDate}'"
+            dbcomm = New MySqlCommand(sql, conn)
+            rangeSales = Convert.ToDecimal(dbcomm.ExecuteScalar())
+
+            sql = $"SELECT SUM(amount) FROM expenses WHERE DATE(date_incurred) BETWEEN '{startDate}' AND '{endDate}'"
+            dbcomm = New MySqlCommand(sql, conn)
+            rangeExpenses = Convert.ToDecimal(dbcomm.ExecuteScalar())
+
+            Dim income As Decimal = rangeSales - rangeExpenses
+            TextBox1.Text = $"Income from {startDate} to {endDate}: ₱" & income.ToString("F2")
+
+        Catch ex As Exception
+            MsgBox("Error calculating range income: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+End Class
