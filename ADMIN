@@ -3296,85 +3296,54 @@ Public Class menu_table
             DataGridView1.DataSource = ds
             DataGridView1.DataMember = "menu"
 
-            sql = "SELECT menu_id FROM menu"
+            sql = "SELECT menu_id FROM menu ORDER BY menu_id ASC"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
+
+            ComboBox1.Items.Clear()
             While dbread.Read()
-                ComboBox1.Items.Add(dbread("menu_id").ToString())
+                ComboBox1.Items.Add(dbread("menu_id"))
             End While
             dbread.Close()
-
-            ComboBox2.Items.Clear()
-            ComboBox2.Items.Add("Food").ToString()
-            ComboBox2.Items.Add("Drinks").ToString()
-            ComboBox2.SelectedIndex = 0
-
-            ComboBox3.Items.Clear()
-            ComboBox3.Items.Add("Available").ToString()
-            ComboBox2.Items.Add("Not Available").ToString()
-            ComboBox3.SelectedIndex = 0
-
-        Catch ex As Exception
-            MsgBox("Error loading data: " & ex.Message)
-        Finally
             conn.Close()
+        Catch ex As Exception
+            MsgBox("Error loading menu IDs: " & ex.Message)
         End Try
+
+        ComboBox2.Items.Clear()
+        ComboBox2.Items.Add("Food")
+        ComboBox2.Items.Add("Drinks")
+        ComboBox2.SelectedIndex = 0
+
+        ComboBox3.Items.Clear()
+        ComboBox3.Items.Add("Available")
+        ComboBox3.Items.Add("Not Available")
+        ComboBox3.SelectedIndex = 0
+
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
         Dim menuID = Val(ComboBox1.SelectedItem)
+
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = "SELECT * FROM menu WHERE menu_id = " & menuID
+
+            sql = $"SELECT * FROM menu WHERE menu_id = {menuID}"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
 
             If dbread.Read() Then
                 TextBox1.Text = dbread("name").ToString()
-                TextBox2.Text = dbread("price").ToString()
                 TextBox3.Text = dbread("flavor").ToString()
+                TextBox2.Text = dbread("price").ToString()
                 ComboBox2.Text = dbread("category").ToString()
                 ComboBox3.Text = dbread("status").ToString()
             End If
             dbread.Close()
-
-        Catch ex As Exception
-            MsgBox("Error: " & ex.Message)
-        Finally
             conn.Close()
-        End Try
-    End Sub
-
-    Private Sub ComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox2.SelectedIndexChanged
-        Dim category As String = ComboBox2.Text
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-            sql = $"SELECT * FROM menu WHERE category = '{category}'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Close()
         Catch ex As Exception
-            MsgBox("Error: " & ex.Message)
-        Finally
-            conn.Close()
-        End Try
-    End Sub
-
-    Private Sub ComboBox3_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox3.SelectedIndexChanged
-        Dim status As String = ComboBox3.Text
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-            sql = $"SELECT * FROM menu WHERE status = '{status}'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Close()
-        Catch ex As Exception
-            MsgBox("Error: " & ex.Message)
-        Finally
-            conn.Close()
+            MsgBox("Error loading menu details: " & ex.Message)
         End Try
     End Sub
 
@@ -3382,36 +3351,37 @@ Public Class menu_table
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            Dim query As String = "SELECT * FROM menu"
-            adapter = New MySqlDataAdapter(query, conn)
+
+            sql = "SELECT * FROM menu"
+            adapter = New MySqlDataAdapter(sql, conn)
             table.Clear()
             adapter.Fill(table)
             DataGridView1.DataSource = table
+
         Catch ex As Exception
-            MessageBox.Show("Error loading data: " & ex.Message)
+            MsgBox("Error refreshing data: " & ex.Message)
         Finally
             conn.Close()
         End Try
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        If ComboBox1.SelectedIndex = -1 Then
+            MsgBox("Please select a menu item to search.")
+            Exit Sub
+        End If
+
+        Dim menuID = ComboBox1.SelectedItem.ToString()
+
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            Dim menuID = Val(ComboBox1.SelectedItem)
-            sql = $"SELECT * FROM menu WHERE menu_id = {menuID}"
-            DataAdapter1 = New MySqlDataAdapter(sql, conn)
-            ds = New DataSet()
-            DataAdapter1.Fill(ds, "menu")
-            DataGridView1.DataSource = ds
-            DataGridView1.DataMember = "menu"
 
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            While dbread.Read()
-                ComboBox1.Items.Add(dbread("menu_id").ToString())
-            End While
-            dbread.Close()
+            sql = $"SELECT * FROM menu WHERE menu_id = {menuID}"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
         Catch ex As Exception
             MsgBox("Error collecting data: " & ex.Message)
         Finally
@@ -3419,8 +3389,10 @@ Public Class menu_table
         End Try
     End Sub
 
+
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         Try
+            Dim i As Integer = 0
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
             Dim name = TextBox1.Text
@@ -3430,8 +3402,12 @@ Public Class menu_table
             Dim status = ComboBox3.Text
             sql = $"INSERT INTO menu (name, flavor, category, price, status) VALUES('{name}', '{flavor}', '{category}', '{price}' , '{status}')"
             dbcomm = New MySqlCommand(sql, conn)
-            Dim i = dbcomm.ExecuteNonQuery()
-            MsgBox(If(i > 0, "Record saved successfully.", "Record not saved."))
+            i = dbcomm.ExecuteNonQuery
+            If (i > 0) Then
+                MsgBox("food added to menu")
+            Else
+                MsgBox("food not added to menu")
+            End If
         Catch ex As Exception
             MsgBox("Insertion Error: " & ex.Message)
         Finally
@@ -3441,6 +3417,7 @@ Public Class menu_table
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
         Try
+            Dim i As Integer = 0
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
             Dim menuID = Val(ComboBox1.SelectedItem)
@@ -3448,8 +3425,12 @@ Public Class menu_table
             If ans = DialogResult.Yes Then
                 sql = $"DELETE FROM menu WHERE menu_id = {menuID}"
                 dbcomm = New MySqlCommand(sql, conn)
-                Dim i = dbcomm.ExecuteNonQuery()
-                MsgBox(If(i > 0, "Record deleted.", "Record not deleted."))
+                i = dbcomm.ExecuteNonQuery
+                If (i > 0) Then
+                    MsgBox("food deleted")
+                Else
+                    MsgBox("food not deleted")
+                End If
             End If
 
             TextBox1.Clear()
@@ -3467,21 +3448,29 @@ Public Class menu_table
     End Sub
 
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Dim menuID = Val(ComboBox1.Text)
+        Dim name = TextBox1.Text
+        Dim flavor = TextBox3.Text
+        Dim category = ComboBox2.Text
+        Dim price = Convert.ToDecimal(TextBox2.Text)
+        Dim status = ComboBox3.Text
+
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            Dim menuID = Val(ComboBox1.SelectedItem)
-            Dim name = TextBox1.Text
-            Dim flavor = TextBox3.Text
-            Dim price = Convert.ToDecimal(TextBox2.Text)
-            Dim category = ComboBox2.Text
-            Dim status = ComboBox3.Text
-            sql = $"UPDATE menu SET name = '{name}', flavor = '{flavor}', category = '{category}', price = '{price}', status = '{status}' WHERE menu_id = {menuID}"
+
+            sql = $"UPDATE menu SET name = '{name}', flavor = '{flavor}', category = '{category}', price = {price}, status = '{status}' WHERE menu_id = {menuID}"
             dbcomm = New MySqlCommand(sql, conn)
-            Dim i = dbcomm.ExecuteNonQuery()
-            MsgBox(If(i > 0, "Record updated.", "Record not updated."))
+            Dim i As Integer = dbcomm.ExecuteNonQuery
+
+            If i > 0 Then
+                MsgBox("Menu item updated successfully.")
+            Else
+                MsgBox("Update failed.")
+            End If
+
         Catch ex As Exception
-            MsgBox("Update Error: " & ex.Message)
+            MsgBox("Error updating record: " & ex.Message)
         Finally
             conn.Close()
         End Try
@@ -3501,6 +3490,7 @@ Public Class menu_table
         admin_buttons.Show()
     End Sub
 End Class
+
 
 
 
