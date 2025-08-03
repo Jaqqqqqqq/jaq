@@ -128,7 +128,10 @@ Public Class login
     End Sub
 End Class
 
----------------------------------------------------------------------------------------- SUPPLIER FORM --------------------------------------------------------------------------------------------------
+                                        ----------------------------------------------------------------------------
+                                                                        SUPPLIERS
+                                        ----------------------------------------------------------------------------
+
 
 
 Imports MySql.Data.MySqlClient
@@ -201,7 +204,7 @@ Public Class suppliers
         Dim contactper = TextBox2.Text
         Dim contactno = TextBox3.Text
         Dim address = TextBox4.Text
-        Dim category = ComboBox2.SelectedItem.ToString
+        Dim category = ComboBox2.SelectedItem.ToString()
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
@@ -222,23 +225,6 @@ Public Class suppliers
         End Try
     End Sub
 
-    Private Sub ComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox2.SelectedIndexChanged
-        Dim category As String = ComboBox2.Text
-        Try
-            If conn.State = ConnectionState.Open Then conn.Close()
-            conn.Open()
-            sql = "SELECT * FROM suppliers WHERE category = '" & category & "'"
-            dbcomm = New MySqlCommand(sql, conn)
-            dbread = dbcomm.ExecuteReader()
-            dbread.Read()
-        Catch ex As MySqlException
-            MsgBox(ex.Message)
-        Catch ex As Exception
-            MsgBox(ex.Message)
-        Finally
-            conn.Close()
-        End Try
-    End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         Dim supplierID = Val(ComboBox1.SelectedItem)
@@ -246,7 +232,7 @@ Public Class suppliers
         Dim contactper = TextBox2.Text
         Dim contactno = TextBox3.Text
         Dim address = TextBox4.Text
-        Dim category = ComboBox2.SelectedItem.ToString
+        Dim category = ComboBox2.SelectedItem.ToString()
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
@@ -388,6 +374,7 @@ Public Class suppliers
         End Try
     End Sub
 End Class
+
 
 
 ------------------------------------------------- CUSTOMER ACCOUNTS -----------------------------------------------------------------
