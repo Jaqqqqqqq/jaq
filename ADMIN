@@ -1366,7 +1366,9 @@ End Class
 
 
 
------------------------------------------------------- FOOD INVENTORY ------------------------------------------------------------------
+                                        ----------------------------------------------------------------------------
+                                                                   FOOD INVENTORY
+                                        ----------------------------------------------------------------------------
 
 
 
@@ -1377,7 +1379,6 @@ End Class
 
 
 Imports MySql.Data.MySqlClient
-
 Public Class food_inventory
     Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
     Public sql As String
@@ -1430,12 +1431,12 @@ Public Class food_inventory
 
             alerts()
 
-            sql = "SELECT supplier_id FROM supplier"
+            sql = "SELECT supplier_id FROM suppliers"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             ComboBox3.Items.Clear()
             While dbread.Read()
-                ComboBox3.Items.Add(dbread("supplier_id").ToString())
+                ComboBox3.Items.Add(dbread("supplier_id"))
             End While
             dbread.Close()
 
@@ -1455,26 +1456,26 @@ Public Class food_inventory
 
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
-        Dim foodID As Integer = Val(ComboBox1.SelectedItem)
+        Dim foodID = Val(ComboBox1.SelectedItem)
 
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
 
-            sql = "SELECT * FROM food_inventory WHERE food_id = " & foodID
-            DataAdapter1 = New MySqlDataAdapter(sql, conn)
+            sql = $"SELECT * FROM food_inventory WHERE food_id = {foodID}"
+            dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
 
             alerts()
 
             If dbread.HasRows AndAlso dbread.Read() Then
-                TextBox1.Text = dbread("name").ToString()
+                TextBox1.Text = dbread("name")
                 TextBox2.Text = dbread("quantity").ToString()
-                TextBox3.Text = dbread("unit").ToString()
+                TextBox3.Text = dbread("unit")
                 DateTimePicker1.Value = Convert.ToDateTime(dbread("last_restock"))
                 DateTimePicker2.Value = Convert.ToDateTime(dbread("expiration_date"))
-                ComboBox4.Text = dbread("status").ToString()
-                ComboBox3.Text = dbread("supplier_id").ToString()
+                ComboBox4.Text = dbread("status")
+                ComboBox3.Text = dbread("supplier_id")
             End If
 
         Catch ex As Exception
@@ -1486,22 +1487,23 @@ Public Class food_inventory
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
         Dim name = TextBox1.Text
-        Dim quantity = TextBox2.Text
+        Dim quantity = Val(TextBox2.Text)
         Dim units = TextBox3.Text
         Dim last_restock = DateTimePicker1.Value.ToString("yyyy-MM-dd")
         Dim expiration_date = DateTimePicker2.Value.ToString("yyyy-MM-dd")
-        Dim status = ComboBox4.SelectedItem.ToString()
-        Dim supplierID = ComboBox3.SelectedItem.ToString()
-        Dim foodID = Val(ComboBox1.SelectedItem)
+        Dim status = ComboBox4.Text
+        Dim supplierID = Val(ComboBox3.Text)
+
         Dim i As Integer = 0
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = $"INSERT INTO food_inventory (name, quantity, unit, last_restock, expiration_date, status, supplier_id) VALUES( 
-            '{name}', '{quantity}', '{units}', '{last_restock}', '{expiration_date}', '{status}','{supplierID}')"
+            sql = $"INSERT INTO food_inventory (supplier_id, name, quantity, unit, last_restock, expiration_date, status) VALUES( 
+            {supplierID}, '{name}', {quantity}, '{units}', '{last_restock}', '{expiration_date}', '{status}')"
 
             dbcomm = New MySqlCommand(sql, conn)
             i = dbcomm.ExecuteNonQuery
+
 
             If (i > 0) Then
                 MsgBox("Record saved successfully.")
@@ -1521,7 +1523,7 @@ Public Class food_inventory
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = "SELECT * FROM suppliers WHERE supplier_id = '" & supplierID & "'"
+            sql = $"SELECT * FROM suppliers WHERE supplier_id = {supplierID}"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             If dbread.HasRows Then dbread.Read()
@@ -1536,11 +1538,11 @@ Public Class food_inventory
     End Sub
 
     Private Sub ComboBox4_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox4.SelectedIndexChanged
-        Dim status As String = ComboBox4.Text
+        Dim status = ComboBox4.Text
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = "SELECT * FROM food_inventory WHERE status = '" & status & "'"
+            sql = $"SELECT * FROM food_inventory WHERE status = '{status}'"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             If dbread.HasRows Then dbread.Read()
@@ -1563,14 +1565,13 @@ Public Class food_inventory
             adapter.Fill(table)
             DataGridView1.DataSource = Nothing
             DataGridView1.DataSource = table
-            alerts()
 
             ComboBox1.Items.Clear()
             sql = "SELECT food_id FROM food_inventory"
             dbcomm = New MySqlCommand(sql, conn)
             dbread = dbcomm.ExecuteReader()
             While dbread.Read()
-                ComboBox1.Items.Add(dbread("food_id").ToString())
+                ComboBox1.Items.Add(dbread("food_id"))
             End While
             dbread.Close()
 
@@ -1579,6 +1580,7 @@ Public Class food_inventory
         Finally
             conn.Close()
         End Try
+        alerts()
     End Sub
 
 
@@ -1588,7 +1590,7 @@ Public Class food_inventory
             conn.Open()
             Dim foodID = Val(ComboBox1.SelectedItem)
 
-            sql = $" SELECT * FROM food_inventory WHERE food_id = '{foodID}'"
+            sql = $" SELECT * FROM food_inventory WHERE food_id = {foodID}"
 
             DataAdapter1 = New MySqlDataAdapter(sql, conn)
             ds = New DataSet()
@@ -1606,24 +1608,25 @@ Public Class food_inventory
         Finally
             conn.Close()
         End Try
+        alerts()
     End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         Dim name = TextBox1.Text
-        Dim quantity = TextBox2.Text
+        Dim quantity = Val(TextBox2.Text)
         Dim units = TextBox3.Text
         Dim last_restock = DateTimePicker1.Value.ToString("yyyy-MM-dd")
         Dim expiration_date = DateTimePicker2.Value.ToString("yyyy-MM-dd")
         Dim status = ComboBox4.SelectedItem.ToString()
-        Dim supplierID = ComboBox3.SelectedItem.ToString()
+        Dim supplierID = Val(ComboBox3.SelectedItem)
         Dim foodID = Val(ComboBox1.SelectedItem)
         Dim i As Integer = 0
 
         Try
             If conn.State = ConnectionState.Open Then conn.Close()
             conn.Open()
-            sql = $"UPDATE food_inventory SET name = '{name}', quantity = '{quantity}', unit = '{units}', last_restock = '{last_restock}',
-expiration_date = '{expiration_date}', status = '{status}',  supplier_id = '{supplierID}' WHERE food_id = '{foodID}'"
+            sql = $"UPDATE food_inventory SET supplier_id = {supplierID}, name = '{name}', quantity = {quantity}, unit = '{units}', last_restock = '{last_restock}',
+expiration_date = '{expiration_date}', status = '{status}' WHERE food_id = {foodID}"
 
             dbcomm = New MySqlCommand(sql, conn)
             i = dbcomm.ExecuteNonQuery
@@ -1637,6 +1640,7 @@ expiration_date = '{expiration_date}', status = '{status}',  supplier_id = '{sup
         Catch ex As Exception
             MsgBox("Error updating record:  " & ex.Message)
         End Try
+        alerts()
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
@@ -1647,7 +1651,7 @@ expiration_date = '{expiration_date}', status = '{status}',  supplier_id = '{sup
             conn.Open()
             Dim ans = MessageBox.Show("do you want to delete this record?", "record deleted", MessageBoxButtons.YesNoCancel)
             If ans = DialogResult.Yes Then
-                sql = $"DELETE FROM food_inventory WHERE food_id = '{foodID}'"
+                sql = $"DELETE FROM food_inventory WHERE food_id = {foodID}"
                 dbcomm = New MySqlCommand(sql, conn)
                 i = dbcomm.ExecuteNonQuery
 
@@ -1672,6 +1676,7 @@ expiration_date = '{expiration_date}', status = '{status}',  supplier_id = '{sup
 
         End Try
         conn.Close()
+        alerts()
     End Sub
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
@@ -1683,7 +1688,7 @@ expiration_date = '{expiration_date}', status = '{status}',  supplier_id = '{sup
         ComboBox4.SelectedIndex = -1
         DateTimePicker1.Value = DateTime.Now
         DateTimePicker2.Value = DateTime.Now
-
+        alerts()
     End Sub
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
