@@ -7056,3 +7056,159 @@ Public Class finance
     End Sub
 
 End Class
+
+
+
+
+
+
+
+                                        ----------------------------------------------------------------------------
+                                                                    FINANCE
+                                        ----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+Imports MySql.Data.MySqlClient
+
+Public Class finance
+    Public conn As New MySqlConnection("server=localhost;user id=root;password=;database=KTV_Database_System")
+    Public sql As String
+    Public dbcomm As MySqlCommand
+    Public dbread As MySqlDataReader
+    Public DataAdapter1 As MySqlDataAdapter
+    Public ds As DataSet
+    Public adapter As MySqlDataAdapter
+    Public table As DataTable = New DataTable()
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            conn.Open()
+            sql = "SELECT * FROM sales"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+        Catch ex As Exception
+            MsgBox("Error refreshing data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+    End Sub
+
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Try
+            conn.Open()
+            Dim startDate = DateTimePicker1.Value.ToString("yyyy-MM-dd")
+            Dim endDate = DateTimePicker2.Value.ToString("yyyy-MM-dd")
+            sql = $"SELECT * FROM sales WHERE DATE(timestamp) BETWEEN '{startDate}' AND '{endDate}'"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+        Catch ex As Exception
+            MsgBox("Error searching data: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        Try
+            conn.Open()
+
+            sql = "SELECT SUM(net_amount) FROM sales"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim totalSales As Decimal = Convert.ToDecimal(dbcomm.ExecuteScalar())
+            TextBox1.Text = "₱" & totalSales.ToString("F2")
+
+            sql = "SELECT * FROM sales"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+            If DataGridView1.Columns.Contains("net_amount") Then
+                DataGridView1.Columns("net_amount").DefaultCellStyle.Format = "C2"
+            End If
+
+        Catch ex As Exception
+            MsgBox("Error displaying sales: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Try
+            conn.Open()
+
+            sql = "SELECT SUM(amount) FROM expenses"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim totalExpenses As Decimal = Convert.ToDecimal(dbcomm.ExecuteScalar())
+            TextBox2.Text = "₱" & totalExpenses.ToString("F2")
+
+            sql = "SELECT * FROM expenses"
+            adapter = New MySqlDataAdapter(sql, conn)
+            table.Clear()
+            adapter.Fill(table)
+            DataGridView1.DataSource = table
+
+        Catch ex As Exception
+            MsgBox("Error displaying expenses: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Try
+            conn.Open()
+
+            sql = "SELECT SUM(net_amount) FROM sales"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim totalSales As Decimal = Convert.ToDecimal(dbcomm.ExecuteScalar())
+
+            sql = "SELECT SUM(amount) FROM expenses"
+            dbcomm = New MySqlCommand(sql, conn)
+            Dim totalExpenses As Decimal = Convert.ToDecimal(dbcomm.ExecuteScalar())
+
+            Dim netIncome As Decimal = totalSales - totalExpenses
+            TextBox3.Text = "₱" & netIncome.ToString("F2")
+
+            Dim summaryTable As New DataTable()
+            summaryTable.Columns.Add("Category")
+            summaryTable.Columns.Add("Amount", GetType(Decimal))
+
+            summaryTable.Rows.Add("Total Sales", totalSales)
+            summaryTable.Rows.Add("Total Expenses", totalExpenses)
+            summaryTable.Rows.Add("Net Income", netIncome)
+
+            DataGridView1.DataSource = summaryTable
+            DataGridView1.Columns("Amount").DefaultCellStyle.Format = "C2"
+
+        Catch ex As Exception
+            MsgBox("Error calculating income statement: " & ex.Message)
+        Finally
+            conn.Close()
+        End Try
+
+    End Sub
+
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        DateTimePicker1.Value = DateTime.Now
+        DateTimePicker2.Value = DateTime.Now
+        TextBox1.Clear()
+        TextBox2.Clear()
+        TextBox3.Clear()
+        table.Clear()
+        DataGridView1.DataSource = Nothing
+    End Sub
+End Class
