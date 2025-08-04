@@ -1,4 +1,3 @@
-FOOD INVENTORY
 
 INSERT INTO food_inventory (food_id, supplier_id, name, quantity, unit, last_restock, expiration_date, status) VALUES
 (1, 11, 'Frozen Fries', 10, 'kg', '2025-07-25', '2025-10-25', 'Fresh'),
